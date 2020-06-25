@@ -1,5 +1,5 @@
 {
-  "name": "intersystems-iris-driver",
+  "name": "sqltools-intersystems-driver",
   "displayName": "InterSystems IRIS Driver",
   "description": "SQLTools Driver for InterSystems IRIS",
   "version": "0.0.1",
@@ -17,6 +17,7 @@
   },
   "keywords": [
     "intersystems-iris-driver",
+    "intersystems",
     "sqltools-driver"
   ],
   "categories": [
@@ -35,13 +36,17 @@
   ],
   "main": "./out/extension.js",
   "dependencies": {
-    "@sqltools/base-driver": "latest",
-    "@sqltools/types": "latest",
+    "@sqltools/base-driver": "^0.1.8",
+    "@sqltools/types": "^0.1.5",
+    "@types/request": "^2.48.5",
+    "@types/request-promise": "^4.1.46",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.5",
     "uuid": "^7.0.2"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.5.5",
-    "@types/node": "^14.0.9",
+    "@types/node": "^14.0.14",
     "@types/vscode": "^1.42.0",
     "typescript": "^3.7.3"
   }

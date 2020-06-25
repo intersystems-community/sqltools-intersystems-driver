@@ -2,112 +2,66 @@ import AbstractDriver from '@sqltools/base-driver';
 import queries from './queries';
 import { IConnectionDriver, MConnectionExplorer, NSDatabase, ContextValue, Arg0 } from '@sqltools/types';
 import { v4 as generateId } from 'uuid';
+import IRISdb, { IRISConfiguration } from './irisdb';
+import keywordsCompletion from './keywords';
 
-/**
- * set Driver lib to the type of your connection.
- * Eg for postgres:
- * import { Pool, PoolConfig } from 'pg';
- * ...
- * type DriverLib = Pool;
- * type DriverOptions = PoolConfig;
- *
- * This will give you completions iside of the library
- */
-type DriverLib = typeof fakeDbLib;
 type DriverOptions = any;
 
-/**
- * MOCKED DB DRIVER
- * THIS IS JUST AN EXAMPLE AND THE LINES BELOW SHOUDL BE REMOVED!
- */
-// import fakeDbLib from './mylib'; // this is what you should do
-const fakeDbLib = {
-  open: () => Promise.resolve(fakeDbLib),
-  query: (..._args: any[]) => {
-    const nResults = parseInt((Math.random() * 1000).toFixed(0));
-    const nCols = parseInt((Math.random() * 100).toFixed(0));
-    const colNames = [...new Array(nCols)].map((_, index) => `col${index}`);
-    const generateRow = () => {
-      const row = {};
-      colNames.forEach(c => {
-        row[c] = Math.random() * 1000;
-      });
-      return row;
-    }
-    const results = [...new Array(nResults)].map(generateRow);
-    return Promise.resolve([results]);
-  },
-  close: () => Promise.resolve(),
-};
-
-
-/* LINES ABOVE CAN BE REMOVED */
-
-
-export default class YourDriverClass extends AbstractDriver<DriverLib, DriverOptions> implements IConnectionDriver {
-
-  /**
-   * If you driver depends on node packages, list it below on `deps` prop.
-   * It will be installed automatically on first use of your driver.
-   */
-  public readonly deps: typeof AbstractDriver.prototype['deps'] = [{
-    type: AbstractDriver.CONSTANTS.DEPENDENCY_PACKAGE,
-    name: 'lodash',
-    // version: 'x.x.x',
-  }];
-
+export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> implements IConnectionDriver {
 
   queries = queries;
-
-  /** if you need to require your lib in runtime and then
-   * use `this.lib.methodName()` anywhere and vscode will take care of the dependencies
-   * to be installed on a cache folder
-   **/
-  // private get lib() {
-  //   return this.requireDep('node-packge-name') as DriverLib;
-  // }
-
+  
   public async open() {
     if (this.connection) {
       return this.connection;
     }
 
-    this.needToInstallDependencies && await this.needToInstallDependencies();
-    /**
-     * open your connection here!!!
-     */
+    let config: IRISConfiguration;
+    if (this.credentials.serverName) {
+      config = {
+        serverName: this.credentials.serverName
+      };
+    }
+    else {
+      config = {
+        host: this.credentials.server,
+        port: this.credentials.port,
+        namespace: this.credentials.namespace
+      }
+    }
 
-    this.connection = fakeDbLib.open();
-    return this.connection;
+    const irisdb = new IRISdb(config);
+    return irisdb.open()
+      .then(() => {
+        this.connection = Promise.resolve(irisdb);
+        return this.connection;
+      });
   }
 
   public async close() {
     if (!this.connection) return Promise.resolve();
-    /**
-     * cose you connection here!!
-     */
-    await fakeDbLib.close();
+
+    await (await this.connection).close();
     this.connection = null;
   }
 
   public query: (typeof AbstractDriver)['prototype']['query'] = async (queries, opt = {}) => {
-    const db = await this.open();
-    const queriesResults = await db.query(queries);
+    const irisdb = await this.open();
+    console.log("Queries: ", typeof queries);
+    const queriesResults = [await irisdb.query(queries.toString(), [])];
     const resultsAgg: NSDatabase.IResult[] = [];
     queriesResults.forEach(queryResult => {
       resultsAgg.push({
         cols: Object.keys(queryResult[0]),
         connId: this.getId(),
-        messages: [{ date: new Date(), message: `Query ok with ${queriesResults.length} results`}],
+        messages: [{ date: new Date(), message: `Query ok with ${queryResult.length} results`}],
         results: queryResult,
         query: queries.toString(),
         requestId: opt.requestId,
         resultId: generateId(),
       });
     });
-    /**
-     * write the method to execute queries here!!
-     */
+
     return resultsAgg;
   }
 
@@ -128,63 +82,16 @@ export default class YourDriverClass extends AbstractDriver<DriverLib, DriverOpt
       case ContextValue.CONNECTION:
       case ContextValue.CONNECTED_CONNECTION:
         return <MConnectionExplorer.IChildItem[]>[
-          { label: 'Tables', type: ContextValue.RESOURCE_GROUP, iconId: 'folder', childType: ContextValue.TABLE },
-          { label: 'Views', type: ContextValue.RESOURCE_GROUP, iconId: 'folder', childType: ContextValue.VIEW },
+          { label: 'Schemas', type: ContextValue.RESOURCE_GROUP, iconId: 'folder', childType: ContextValue.SCHEMA },
         ];
       case ContextValue.TABLE:
       case ContextValue.VIEW:
-        let i = 0;
-        return <NSDatabase.IColumn[]>[{
-          database: 'fakedb',
-          label: `column${i++}`,
-          type: ContextValue.COLUMN,
-          dataType: 'faketype',
-          schema: 'fakeschema',
-          childType: ContextValue.NO_CHILD,
-          isNullable: false,
-          iconName: 'column',
-          table: parent,
-        },{
-          database: 'fakedb',
-          label: `column${i++}`,
-          type: ContextValue.COLUMN,
-          dataType: 'faketype',
-          schema: 'fakeschema',
-          childType: ContextValue.NO_CHILD,
-          isNullable: false,
-          iconName: 'column',
-          table: parent,
-        },{
-          database: 'fakedb',
-          label: `column${i++}`,
-          type: ContextValue.COLUMN,
-          dataType: 'faketype',
-          schema: 'fakeschema',
-          childType: ContextValue.NO_CHILD,
-          isNullable: false,
-          iconName: 'column',
-          table: parent,
-        },{
-          database: 'fakedb',
-          label: `column${i++}`,
-          type: ContextValue.COLUMN,
-          dataType: 'faketype',
-          schema: 'fakeschema',
-          childType: ContextValue.NO_CHILD,
-          isNullable: false,
-          iconName: 'column',
-          table: parent,
-        },{
-          database: 'fakedb',
-          label: `column${i++}`,
-          type: ContextValue.COLUMN,
-          dataType: 'faketype',
-          schema: 'fakeschema',
-          childType: ContextValue.NO_CHILD,
-          isNullable: false,
-          iconName: 'column',
-          table: parent,
-        }];
+        return this.getColumns(item as NSDatabase.ITable);
+      case ContextValue.SCHEMA:
+        return <MConnectionExplorer.IChildItem[]>[
+          { label: 'Tables', type: ContextValue.RESOURCE_GROUP, iconId: 'folder', childType: ContextValue.TABLE },
+          { label: 'Views', type: ContextValue.RESOURCE_GROUP, iconId: 'folder', childType: ContextValue.VIEW },
+        ];
       case ContextValue.RESOURCE_GROUP:
         return this.getChildrenForGroup({ item, parent });
     }
@@ -196,31 +103,14 @@ export default class YourDriverClass extends AbstractDriver<DriverLib, DriverOpt
    * It gets the child based on child types
    */
   private async getChildrenForGroup({ parent, item }: Arg0<IConnectionDriver['getChildrenForItem']>) {
-    console.log({ item, parent });
+    console.log("getChildrenForGroup", parent, item);
     switch (item.childType) {
+      case ContextValue.SCHEMA:
+        return this.queryResults(this.queries.fetchSchemas(parent as NSDatabase.IDatabase));
       case ContextValue.TABLE:
+        return this.queryResults(this.queries.fetchTables(parent as NSDatabase.ISchema));
       case ContextValue.VIEW:
-        let i = 0;
-        return <MConnectionExplorer.IChildItem[]>[{
-          database: 'fakedb',
-          label: `${item.childType}${i++}`,
-          type: item.childType,
-          schema: 'fakeschema',
-          childType: ContextValue.COLUMN,
-        },{
-          database: 'fakedb',
-          label: `${item.childType}${i++}`,
-          type: item.childType,
-          schema: 'fakeschema',
-          childType: ContextValue.COLUMN,
-        },
-        {
-          database: 'fakedb',
-          label: `${item.childType}${i++}`,
-          type: item.childType,
-          schema: 'fakeschema',
-          childType: ContextValue.COLUMN,
-        }];
+        return this.queryResults(this.queries.fetchViews(parent as NSDatabase.ISchema));
     }
     return [];
   }
@@ -232,87 +122,24 @@ export default class YourDriverClass extends AbstractDriver<DriverLib, DriverOpt
     switch (itemType) {
       case ContextValue.TABLE:
       case ContextValue.VIEW:
-        let j = 0;
-        return [{
-          database: 'fakedb',
-          label: `${search || 'table'}${j++}`,
-          type: itemType,
-          schema: 'fakeschema',
-          childType: ContextValue.COLUMN,
-        },{
-          database: 'fakedb',
-          label: `${search || 'table'}${j++}`,
-          type: itemType,
-          schema: 'fakeschema',
-          childType: ContextValue.COLUMN,
-        },
-        {
-          database: 'fakedb',
-          label: `${search || 'table'}${j++}`,
-          type: itemType,
-          schema: 'fakeschema',
-          childType: ContextValue.COLUMN,
-        }]
+        return []
       case ContextValue.COLUMN:
-        let i = 0;
-        return [
-          {
-            database: 'fakedb',
-            label: `${search || 'column'}${i++}`,
-            type: ContextValue.COLUMN,
-            dataType: 'faketype',
-            schema: 'fakeschema',
-            childType: ContextValue.NO_CHILD,
-            isNullable: false,
-            iconName: 'column',
-            table: 'fakeTable'
-          },{
-            database: 'fakedb',
-            label: `${search || 'column'}${i++}`,
-            type: ContextValue.COLUMN,
-            dataType: 'faketype',
-            schema: 'fakeschema',
-            childType: ContextValue.NO_CHILD,
-            isNullable: false,
-            iconName: 'column',
-            table: 'fakeTable'
-          },{
-            database: 'fakedb',
-            label: `${search || 'column'}${i++}`,
-            type: ContextValue.COLUMN,
-            dataType: 'faketype',
-            schema: 'fakeschema',
-            childType: ContextValue.NO_CHILD,
-            isNullable: false,
-            iconName: 'column',
-            table: 'fakeTable'
-          },{
-            database: 'fakedb',
-            label: `${search || 'column'}${i++}`,
-            type: ContextValue.COLUMN,
-            dataType: 'faketype',
-            schema: 'fakeschema',
-            childType: ContextValue.NO_CHILD,
-            isNullable: false,
-            iconName: 'column',
-            table: 'fakeTable'
-          },{
-            database: 'fakedb',
-            label: `${search || 'column'}${i++}`,
-            type: ContextValue.COLUMN,
-            dataType: 'faketype',
-            schema: 'fakeschema',
-            childType: ContextValue.NO_CHILD,
-            isNullable: false,
-            iconName: 'column',
-            table: 'fakeTable'
-          }
-        ];
+        return [];
     }
     return [];
   }
 
+  private async getColumns(parent: NSDatabase.ITable): Promise<NSDatabase.IColumn[]> {
+    const results = await this.queryResults(this.queries.fetchColumns(parent));
+    return results.map(col => ({
+      ...col,
+      iconName: col.isPk ? 'pk' : (col.isFk ? 'fk' : null),
+      childType: ContextValue.NO_CHILD,
+      table: parent
+    }));
+  }
+
   public getStaticCompletions: IConnectionDriver['getStaticCompletions'] = async () => {
-    return {};
+    return keywordsCompletion;
   }
 }

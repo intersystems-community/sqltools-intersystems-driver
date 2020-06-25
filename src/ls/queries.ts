@@ -10,35 +10,52 @@ const describeTable: IBaseQueries['describeTable'] = queryFactory`
 `;
 
 const fetchColumns: IBaseQueries['fetchColumns'] = queryFactory`
-SELECT C.name AS label,
-  C.*,
-  C.type AS dataType,
-  C."notnull" AS isNullable,
-  C.pk AS isPk,
-  '${ContextValue.COLUMN}' as type
-FROM pragma_table_info('${p => p.label}') AS C
-ORDER BY cid ASC
+SELECT
+  C.COLUMN_NAME AS label,
+  '${ContextValue.COLUMN}' as type,
+  C.TABLE_NAME AS "table",
+  C.DATA_TYPE AS "dataType",
+  UPPER(C.DATA_TYPE || (
+    CASE WHEN C.CHARACTER_MAXIMUM_LENGTH > 0 THEN (
+      '(' || C.CHARACTER_MAXIMUM_LENGTH || ')'
+    ) ELSE '' END
+  )) AS "detail",
+  C.CHARACTER_MAXIMUM_LENGTH AS size,
+  C.TABLE_SCHEMA AS "schema",
+  C.COLUMN_DEFAULT AS "defaultValue",
+  C.IS_NULLABLE AS "isNullable"
+FROM
+  INFORMATION_SCHEMA.COLUMNS C
+WHERE
+  C.TABLE_SCHEMA = '${p => p.schema}'
+  AND C.TABLE_NAME = '${p => p.label}'
+ORDER BY
+  C.TABLE_NAME,
+  C.ORDINAL_POSITION
 `;
 
 const fetchRecords: IBaseQueries['fetchRecords'] = queryFactory`
-SELECT *
-FROM ${p => (p.table.label || p.table)}
-LIMIT ${p => p.limit || 50}
-OFFSET ${p => p.offset || 0};
+SELECT TOP ${p => p.limit || 50} *
+FROM ${p => p.table.schema}.${p => (p.table.label || p.table)}
 `;
 
 const countRecords: IBaseQueries['countRecords'] = queryFactory`
 SELECT count(1) AS total
-FROM ${p => (p.table.label || p.table)};
+FROM ${p => p.table.schema}.${p => (p.table.label || p.table)}
 `;
 
-const fetchTablesAndViews = (type: ContextValue, tableType = 'table'): IBaseQueries['fetchTables'] => queryFactory`
-SELECT name AS label,
-  '${type}' AS type
-FROM sqlite_master
-WHERE LOWER(type) LIKE '${tableType.toLowerCase()}'
-  AND name NOT LIKE 'sqlite_%'
-ORDER BY name
+const fetchTablesAndViews = (type: ContextValue, tableType = 'BASE TABLE'): IBaseQueries['fetchTables'] => queryFactory`
+SELECT
+  T.TABLE_NAME AS label,
+  '${type}' as type,
+  T.TABLE_SCHEMA AS "schema",
+  '${type === ContextValue.VIEW ? 'TRUE' : 'FALSE'}' AS isView
+FROM INFORMATION_SCHEMA.${type === ContextValue.VIEW ? 'VIEWS' : 'TABLES'} AS T
+WHERE
+  T.TABLE_SCHEMA = '${p => p.schema}'
+  AND T.TABLE_TYPE = '${tableType}'
+ORDER BY
+  T.TABLE_NAME
 `;
 
 const fetchTables: IBaseQueries['fetchTables'] = fetchTablesAndViews(ContextValue.TABLE);
@@ -77,6 +94,16 @@ ORDER BY C.name ASC,
 LIMIT ${p => p.limit || 100}
 `;
 
+const fetchSchemas: IBaseQueries['fetchSchemas'] = queryFactory`
+SELECT
+  schema_name AS label,
+  schema_name AS "schema",
+  '${ContextValue.SCHEMA}' as "type",
+  'folder' as iconId
+FROM information_schema.schemata
+WHERE schema_name <> 'information_schema'
+`;
+
 export default {
   describeTable,
   countRecords,
@@ -85,5 +112,6 @@ export default {
   fetchTables,
   fetchViews,
   searchTables,
-  searchColumns
+  searchColumns,
+  fetchSchemas,
 }
