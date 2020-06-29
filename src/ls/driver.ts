@@ -2,32 +2,47 @@ import AbstractDriver from '@sqltools/base-driver';
 import queries from './queries';
 import { IConnectionDriver, MConnectionExplorer, NSDatabase, ContextValue, Arg0 } from '@sqltools/types';
 import { v4 as generateId } from 'uuid';
-import IRISdb, { IRISConfiguration } from './irisdb';
+import IRISdb, { IRISDirect } from './irisdb';
 import keywordsCompletion from './keywords';
+// import { workspace } from "vscode";
 
 type DriverOptions = any;
 
 export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> implements IConnectionDriver {
 
   queries = queries;
-  
+
   public async open() {
     if (this.connection) {
       return this.connection;
     }
 
-    let config: IRISConfiguration;
+    const { namespace } = this.credentials;
+    let config: IRISDirect;
     if (this.credentials.serverName) {
+      // const serverName = this.credentials.serverName;
+      // const server = workspace.getConfiguration(`intersystems.servers.${serverName}.webServer`);
+      // let { scheme, host, port, pathPrefix, username, password } = server;
+      // config = {
+      //   https: scheme === "https",
+      //   host,
+      //   port,
+      //   pathPrefix,
+      //   namespace,
+      //   username,
+      //   password
+      // };
+    } else {
+      let { https, server: host, port, pathPrefix, username, password } = this.credentials;
       config = {
-        serverName: this.credentials.serverName
+        https,
+        host,
+        port,
+        pathPrefix,
+        namespace,
+        username,
+        password
       };
-    }
-    else {
-      config = {
-        host: this.credentials.server,
-        port: this.credentials.port,
-        namespace: this.credentials.namespace
-      }
     }
 
     const irisdb = new IRISdb(config);
@@ -54,7 +69,7 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
       resultsAgg.push({
         cols: Object.keys(queryResult[0]),
         connId: this.getId(),
-        messages: [{ date: new Date(), message: `Query ok with ${queryResult.length} results`}],
+        messages: [{ date: new Date(), message: `Query ok with ${queryResult.length} results` }],
         results: queryResult,
         query: queries.toString(),
         requestId: opt.requestId,

@@ -5,7 +5,8 @@
     "namespace": {
       "title": "Namespace",
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "default": "USER"
     },
     "username": {
       "title": "Username",
@@ -24,6 +25,7 @@
     }
   },
   "properties": {
+    "namespace": { "$ref": "#/definitions/namespace" },
     "connectionMethod": {
       "title": "Connect using",
       "type": "string",
@@ -52,7 +54,6 @@
               "default": 52773,
               "type": "integer"
             },
-            "namespace": { "$ref": "#/definitions/namespace" },
             "username": { "$ref": "#/definitions/username" },
             "askForPassword": { "$ref": "#/definitions/askForPassword" }
           },
@@ -69,7 +70,7 @@
               "minLength": 1
             }
           },
-          "required": ["connectString"]
+          "required": ["serverName"]
         }
       ]
     },
@@ -87,6 +88,6 @@
     }
   },
   "required": [
-    "connectionMethod"
+    "connectionMethod", "namespace"
   ]
 }

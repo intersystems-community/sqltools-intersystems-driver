@@ -2,20 +2,15 @@ import * as httpModule from "http";
 import * as httpsModule from "https";
 import requestPromise from "request-promise";
 
-interface IRISDirect {
+export class IRISDirect {
   https?: boolean;
   host: string;
   port: number;
+  pathPrefix?: string;
   namespace: string;
   username?: string;
   password?: string;
 }
-
-interface IRISServerManager {
-  serverName: string;
-}
-
-export type IRISConfiguration = IRISDirect | IRISServerManager;
 
 export default class IRISdb {
 
@@ -23,15 +18,8 @@ export default class IRISdb {
   private cookies: string[] = [];
   private apiVersion = 1;
 
-  public constructor(config: IRISConfiguration) {
-    this.config = {
-      https: false,
-      host: 'localhost',
-      port: 52774,
-      namespace: 'LIBERO',
-      username: '_SYSTEM',
-      password: 'SYS'
-    };
+  public constructor(config: IRISDirect) {
+    this.config = config;
     this.config.namespace = this.config.namespace.toUpperCase();
   }
 
@@ -109,7 +97,7 @@ export default class IRISdb {
     return auth.then(cookie => 
         requestPromise({
           agent,
-          auth: { username, password, sendImmediately: true },
+          auth: { user: username, pass: password, sendImmediately: true },
           body: ["PUT", "POST"].includes(method) ? body : null,
           headers: {
             ...headers,
