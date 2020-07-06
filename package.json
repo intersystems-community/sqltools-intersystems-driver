@@ -4,16 +4,18 @@
   "description": "SQLTools Driver for InterSystems IRIS",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.42.0"
+    "vscode": "^1.46.0"
   },
-  "publisher": "intersystems",
+  "publisher": "intersystems-community",
   "license": "MIT",
   "repository": {},
   "bugs": {},
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package -o sqltools-intersystems-driver.vsix",
+    "lint": ""
   },
   "keywords": [
     "intersystems-iris-driver",

@@ -133,7 +133,7 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
   /**
    * This method is a helper for intellisense and quick picks.
    */
-  public async searchItems(itemType: ContextValue, search: string, _extraParams: any = {}): Promise<NSDatabase.SearchableItem[]> {
+  public async searchItems(itemType: ContextValue, _search: string, _extraParams: any = {}): Promise<NSDatabase.SearchableItem[]> {
     switch (itemType) {
       case ContextValue.TABLE:
       case ContextValue.VIEW:
