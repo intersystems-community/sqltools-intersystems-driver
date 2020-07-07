@@ -1,15 +1,16 @@
-import { IBaseQueries, ContextValue } from '@sqltools/types';
+import { ContextValue, NSDatabase, QueryBuilder } from '@sqltools/types';
 import queryFactory from '@sqltools/base-driver/dist/lib/factory';
+import { IQueries } from './irisdb';
 
 /** write your queries here go fetch desired data. This queries are just examples copied from SQLite driver */
 
-const describeTable: IBaseQueries['describeTable'] = queryFactory`
+const describeTable: IQueries['describeTable'] = queryFactory`
   SELECT C.*
   FROM pragma_table_info('${p => p.label}') AS C
   ORDER BY C.cid ASC
 `;
 
-const fetchColumns: IBaseQueries['fetchColumns'] = queryFactory`
+const fetchColumns: IQueries['fetchColumns'] = queryFactory`
 SELECT
   C.COLUMN_NAME AS label,
   '${ContextValue.COLUMN}' as type,
@@ -34,41 +35,40 @@ ORDER BY
   C.ORDINAL_POSITION
 `;
 
-const fetchRecords: IBaseQueries['fetchRecords'] = queryFactory`
+const fetchRecords: IQueries['fetchRecords'] = queryFactory`
 SELECT TOP ${p => p.limit || 50} *
 FROM ${p => p.table.schema}.${p => (p.table.label || p.table)}
 `;
 
-const countRecords: IBaseQueries['countRecords'] = queryFactory`
+const countRecords: IQueries['countRecords'] = queryFactory`
 SELECT count(1) AS total
 FROM ${p => p.table.schema}.${p => (p.table.label || p.table)}
 `;
 
-const fetchTablesAndViews = (type: ContextValue, tableType = 'BASE TABLE'): IBaseQueries['fetchTables'] => queryFactory`
-SELECT
-  T.TABLE_NAME AS label,
-  '${type}' as type,
-  T.TABLE_SCHEMA AS "schema",
-  '${type === ContextValue.VIEW ? 'TRUE' : 'FALSE'}' AS isView
-FROM INFORMATION_SCHEMA.${type === ContextValue.VIEW ? 'VIEWS' : 'TABLES'} AS T
-WHERE
-  T.TABLE_SCHEMA = '${p => p.schema}'
-  AND T.TABLE_TYPE = '${tableType}'
+const fetchAnyItems = <T>(type: ContextValue, isView: boolean, name: string, func: string): QueryBuilder<NSDatabase.ISchema, T> => queryFactory`
+SELECT 
+  ${name} AS label,
+  SCHEMA_NAME AS "schema",
+  '${type}' as "type",
+  '${isView ? 'TRUE' : 'FALSE'}' as isView
+FROM %SQL_MANAGER.${func}()
+WHERE SCHEMA_NAME = '${p => p.schema}'
 ORDER BY
-  T.TABLE_NAME
+  ${name}
 `;
 
-const fetchTables: IBaseQueries['fetchTables'] = fetchTablesAndViews(ContextValue.TABLE);
-const fetchViews: IBaseQueries['fetchTables'] = fetchTablesAndViews(ContextValue.VIEW , 'view');
+const fetchTables = fetchAnyItems<NSDatabase.ITable>(ContextValue.TABLE, false, 'TABLE_NAME', 'TablesTree');
+const fetchViews = fetchAnyItems<NSDatabase.ITable>(ContextValue.TABLE, true, 'VIEW_NAME', 'ViewsTree');
+const fetchFunctions = fetchAnyItems<NSDatabase.IProcedure>(ContextValue.FUNCTION, false, 'PROCEDURE_NAME', 'ProceduresTree');
 
-const searchTables: IBaseQueries['searchTables'] = queryFactory`
+const searchTables: IQueries['searchTables'] = queryFactory`
 SELECT name AS label,
   type
 FROM sqlite_master
 ${p => p.search ? `WHERE LOWER(name) LIKE '%${p.search.toLowerCase()}%'` : ''}
 ORDER BY name
 `;
-const searchColumns: IBaseQueries['searchColumns'] = queryFactory`
+const searchColumns: IQueries['searchColumns'] = queryFactory`
 SELECT C.name AS label,
   T.name AS "table",
   C.type AS dataType,
@@ -79,30 +79,35 @@ FROM sqlite_master AS T
 LEFT OUTER JOIN pragma_table_info((T.name)) AS C ON 1 = 1
 WHERE 1 = 1
 ${p => p.tables.filter(t => !!t.label).length
-  ? `AND LOWER(T.name) IN (${p.tables.filter(t => !!t.label).map(t => `'${t.label}'`.toLowerCase()).join(', ')})`
-  : ''
-}
+    ? `AND LOWER(T.name) IN (${p.tables.filter(t => !!t.label).map(t => `'${t.label}'`.toLowerCase()).join(', ')})`
+    : ''
+  }
 ${p => p.search
-  ? `AND (
+    ? `AND (
     LOWER(T.name || '.' || C.name) LIKE '%${p.search.toLowerCase()}%'
     OR LOWER(C.name) LIKE '%${p.search.toLowerCase()}%'
   )`
-  : ''
-}
+    : ''
+  }
 ORDER BY C.name ASC,
   C.cid ASC
 LIMIT ${p => p.limit || 100}
 `;
 
-const fetchSchemas: IBaseQueries['fetchSchemas'] = queryFactory`
-SELECT
-  schema_name AS label,
-  schema_name AS "schema",
+const fetchTypedSchemas = (type: ContextValue, func: string): IQueries['fetchSchemas'] => queryFactory`
+SELECT 
+  DISTINCT BY (SCHEMA_NAME) 
+  %EXACT(SCHEMA_NAME) AS label,
+  %EXACT(SCHEMA_NAME) AS "schema",
   '${ContextValue.SCHEMA}' as "type",
+  '${type}' as "childType",
   'folder' as iconId
-FROM information_schema.schemata
-WHERE schema_name <> 'information_schema'
+FROM %SQL_MANAGER.${func}()
 `;
+
+const fetchTableSchemas = fetchTypedSchemas(ContextValue.TABLE, 'TablesTree');
+const fetchViewSchemas = fetchTypedSchemas(ContextValue.VIEW, 'ViewsTree');
+const fetchFunctionSchemas = fetchTypedSchemas(ContextValue.FUNCTION, 'ProceduresTree');
 
 export default {
   describeTable,
@@ -110,8 +115,11 @@ export default {
   fetchColumns,
   fetchRecords,
   fetchTables,
+  fetchFunctions,
   fetchViews,
   searchTables,
   searchColumns,
-  fetchSchemas,
+  fetchTableSchemas,
+  fetchViewSchemas,
+  fetchFunctionSchemas,
 }

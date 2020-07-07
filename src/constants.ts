@@ -4,5 +4,5 @@ import { IDriverAlias } from '@sqltools/types';
  * Aliases for yout driver. EG: PostgreSQL, PG, postgres can all resolve to your driver
  */
 export const DRIVER_ALIASES: IDriverAlias[] = [
-  { displayName: 'InterSystems IRIS Driver', value: 'InterSystems IRIS Driver'},
+  { displayName: 'InterSystems IRIS', value: 'InterSystems IRIS'},
 ];

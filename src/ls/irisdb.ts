@@ -1,6 +1,7 @@
 import * as httpModule from "http";
 import * as httpsModule from "https";
 import requestPromise from "request-promise";
+import { QueryBuilder, NSDatabase, IBaseQueries } from "@sqltools/types";
 
 export class IRISDirect {
   https?: boolean;
@@ -10,6 +11,14 @@ export class IRISDirect {
   namespace: string;
   username?: string;
   password?: string;
+}
+
+export interface IQueries extends IBaseQueries  {
+  fetchTableSchemas?: QueryBuilder<NSDatabase.IDatabase, NSDatabase.ISchema>;
+  fetchViewSchemas?: QueryBuilder<NSDatabase.IDatabase, NSDatabase.ISchema>;
+  fetchFunctionSchemas?: QueryBuilder<NSDatabase.IDatabase, NSDatabase.ISchema>;
+
+  fetchViews: QueryBuilder<NSDatabase.ISchema, NSDatabase.ITable>;
 }
 
 export default class IRISdb {

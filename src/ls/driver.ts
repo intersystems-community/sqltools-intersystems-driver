@@ -2,15 +2,14 @@ import AbstractDriver from '@sqltools/base-driver';
 import queries from './queries';
 import { IConnectionDriver, MConnectionExplorer, NSDatabase, ContextValue, Arg0 } from '@sqltools/types';
 import { v4 as generateId } from 'uuid';
-import IRISdb, { IRISDirect } from './irisdb';
+import IRISdb, { IRISDirect, IQueries } from './irisdb';
 import keywordsCompletion from './keywords';
 // import { workspace } from "vscode";
 
 type DriverOptions = any;
-
 export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> implements IConnectionDriver {
 
-  queries = queries;
+  queries: IQueries = queries;
 
   public async open() {
     if (this.connection) {
@@ -67,7 +66,7 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
     const resultsAgg: NSDatabase.IResult[] = [];
     queriesResults.forEach(queryResult => {
       resultsAgg.push({
-        cols: Object.keys(queryResult[0]),
+        cols: queryResult.length ? Object.keys(queryResult[0]) : [],
         connId: this.getId(),
         messages: [{ date: new Date(), message: `Query ok with ${queryResult.length} results` }],
         results: queryResult,
@@ -97,35 +96,41 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
       case ContextValue.CONNECTION:
       case ContextValue.CONNECTED_CONNECTION:
         return <MConnectionExplorer.IChildItem[]>[
-          { label: 'Schemas', type: ContextValue.RESOURCE_GROUP, iconId: 'folder', childType: ContextValue.SCHEMA },
+          { label: 'Tables', type: ContextValue.RESOURCE_GROUP, iconId: 'folder', childType: ContextValue.TABLE },
+          { label: 'Views', type: ContextValue.RESOURCE_GROUP, iconId: 'folder', childType: ContextValue.VIEW },
+          { label: 'Procedures', type: ContextValue.RESOURCE_GROUP, iconId: 'folder', childType: ContextValue.FUNCTION },
         ];
+      case ContextValue.RESOURCE_GROUP:
+        return this.getSchemas({ item, parent });
+      case ContextValue.SCHEMA:
+        return this.getChildrenForSchema({ item, parent });
       case ContextValue.TABLE:
       case ContextValue.VIEW:
         return this.getColumns(item as NSDatabase.ITable);
-      case ContextValue.SCHEMA:
-        return <MConnectionExplorer.IChildItem[]>[
-          { label: 'Tables', type: ContextValue.RESOURCE_GROUP, iconId: 'folder', childType: ContextValue.TABLE },
-          { label: 'Views', type: ContextValue.RESOURCE_GROUP, iconId: 'folder', childType: ContextValue.VIEW },
-        ];
-      case ContextValue.RESOURCE_GROUP:
-        return this.getChildrenForGroup({ item, parent });
     }
     return [];
   }
 
-  /**
-   * This method is a helper to generate the connection explorer tree.
-   * It gets the child based on child types
-   */
-  private async getChildrenForGroup({ parent, item }: Arg0<IConnectionDriver['getChildrenForItem']>) {
-    console.log("getChildrenForGroup", parent, item);
+  private async getSchemas({ item }: Arg0<IConnectionDriver['getChildrenForItem']>) {
     switch (item.childType) {
-      case ContextValue.SCHEMA:
-        return this.queryResults(this.queries.fetchSchemas(parent as NSDatabase.IDatabase));
       case ContextValue.TABLE:
-        return this.queryResults(this.queries.fetchTables(parent as NSDatabase.ISchema));
+        return this.queryResults(this.queries.fetchTableSchemas());
       case ContextValue.VIEW:
-        return this.queryResults(this.queries.fetchViews(parent as NSDatabase.ISchema));
+        return this.queryResults(this.queries.fetchViewSchemas());
+      case ContextValue.FUNCTION:
+        return this.queryResults(this.queries.fetchFunctionSchemas());
+    }
+    return [];
+  }
+
+  private async getChildrenForSchema({ item }: Arg0<IConnectionDriver['getChildrenForItem']>) {
+    switch (item.childType) {
+      case ContextValue.TABLE:
+        return this.queryResults(this.queries.fetchTables(item as NSDatabase.ISchema));
+      case ContextValue.VIEW:
+        return this.queryResults(this.queries.fetchViews(item as NSDatabase.ISchema));
+      case ContextValue.FUNCTION:
+        return this.queryResults(this.queries.fetchFunctions(item as NSDatabase.ISchema));
     }
     return [];
   }

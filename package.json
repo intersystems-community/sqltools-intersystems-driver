@@ -1,6 +1,6 @@
 {
   "name": "sqltools-intersystems-driver",
-  "displayName": "InterSystems IRIS Driver",
+  "displayName": "SQLTools InterSystems IRIS",
   "description": "SQLTools Driver for InterSystems IRIS",
   "version": "0.0.1",
   "engines": {
