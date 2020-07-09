@@ -59,10 +59,17 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
     this.connection = null;
   }
 
+  private splitQueries(queries: string): string[] {
+    if (!queries.includes(';')) {
+      return [queries]
+    }
+
+    return queries.split(/;\s*\n/gm).filter(query => query.trim().length);
+  }
+
   public query: (typeof AbstractDriver)['prototype']['query'] = async (queries, opt = {}) => {
     const irisdb = await this.open();
-    console.log("Queries: ", typeof queries);
-    const queriesResults = [await irisdb.query(queries.toString(), [])];
+    const queriesResults = await Promise.all(this.splitQueries(queries.toString()).map(query => irisdb.query(query, [])));
     const resultsAgg: NSDatabase.IResult[] = [];
     queriesResults.forEach(queryResult => {
       resultsAgg.push({
