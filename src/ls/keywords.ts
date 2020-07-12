@@ -286,7 +286,7 @@ const keywordsCompletion: { [w: string]: NSDatabase.IStaticCompletion } = keywor
     label: word,
     detail: word,
     filterText: word,
-    sortText: (['SELECT', 'CREATE', 'UPDATE', 'DELETE'].includes(word) ? '2:' : '') + word,
+    sortText: (['SELECT', 'CREATE', 'UPDATE', 'DELETE', 'FROM', 'INSERT', 'INTO'].includes(word) ? '2:' : '99:') + word,
     documentation: {
       value: `\`\`\`yaml\nWORD: ${word}\n\`\`\``,
       kind: 'markdown'

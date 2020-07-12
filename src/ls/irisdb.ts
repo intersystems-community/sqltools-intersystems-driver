@@ -17,8 +17,10 @@ export interface IQueries extends IBaseQueries  {
   fetchTableSchemas?: QueryBuilder<NSDatabase.IDatabase, NSDatabase.ISchema>;
   fetchViewSchemas?: QueryBuilder<NSDatabase.IDatabase, NSDatabase.ISchema>;
   fetchFunctionSchemas?: QueryBuilder<NSDatabase.IDatabase, NSDatabase.ISchema>;
-
+  
   fetchViews: QueryBuilder<NSDatabase.ISchema, NSDatabase.ITable>;
+
+  searchEverything: QueryBuilder<{ search: string, limit?: number }, NSDatabase.ITable>;
 }
 
 export default class IRISdb {
@@ -124,12 +126,10 @@ export default class IRISdb {
             return response;
           })
           .then(response => {
-            // console.log(`APIResponse: ${method} ${proto}://${host}:${port}${path}`)
             if (method === "HEAD") {
               return this.cookies;
             }
             const data = response.body;
-            console.log('data', data);
             /// deconde encoded content
             if (data.result && data.result.enc && data.result.content) {
               data.result.enc = false;
@@ -180,7 +180,6 @@ export default class IRISdb {
 
   public async query(query: string, parameters: string[]): Promise<any> {
     console.log('SQL: ' + query);
-    console.log('SQLPARAMS: ' + JSON.stringify(parameters));
     return this.request(1, "POST", `${this.config.namespace}/action/query`, {
       parameters,
       query,

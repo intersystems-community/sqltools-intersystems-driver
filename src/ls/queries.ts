@@ -2,37 +2,73 @@ import { ContextValue, NSDatabase, QueryBuilder } from '@sqltools/types';
 import queryFactory from '@sqltools/base-driver/dist/lib/factory';
 import { IQueries } from './irisdb';
 
-/** write your queries here go fetch desired data. This queries are just examples copied from SQLite driver */
+const Functions = {};
+Functions[ContextValue.TABLE] = "%SQL_MANAGER.TablesTree";
+Functions[ContextValue.VIEW] = "%SQL_MANAGER.ViewsTree";
+Functions[ContextValue.FUNCTION] = "%SQL_MANAGER.ProceduresTree";
+
+const ValueColumn = {};
+ValueColumn[ContextValue.TABLE] = "TABLE_NAME";
+ValueColumn[ContextValue.VIEW] = "VIEW_NAME";
+ValueColumn[ContextValue.FUNCTION] = "PROCEDURE_NAME";
+
+interface ISchema extends NSDatabase.ISchema {
+  showSystem: boolean;
+}
 
 const describeTable: IQueries['describeTable'] = queryFactory`
-  SELECT C.*
-  FROM pragma_table_info('${p => p.label}') AS C
-  ORDER BY C.cid ASC
+SELECT * FROM INFORMATION_SCHEMA.COLUMNS
+WHERE
+  TABLE_NAME = '${p => p.label}'
+  AND TABLE_SCHEMA = '${p => p.schema}'
 `;
 
 const fetchColumns: IQueries['fetchColumns'] = queryFactory`
 SELECT
-  C.COLUMN_NAME AS label,
+  COLUMN_NAME AS label,
   '${ContextValue.COLUMN}' as type,
-  C.TABLE_NAME AS "table",
-  C.DATA_TYPE AS "dataType",
-  UPPER(C.DATA_TYPE || (
-    CASE WHEN C.CHARACTER_MAXIMUM_LENGTH > 0 THEN (
-      '(' || C.CHARACTER_MAXIMUM_LENGTH || ')'
+  TABLE_NAME AS "table",
+  DATA_TYPE AS "dataType",
+  UPPER(DATA_TYPE || (
+    CASE WHEN CHARACTER_MAXIMUM_LENGTH > 0 THEN (
+      '(' || CHARACTER_MAXIMUM_LENGTH || ')'
     ) ELSE '' END
   )) AS "detail",
-  C.CHARACTER_MAXIMUM_LENGTH AS size,
-  C.TABLE_SCHEMA AS "schema",
-  C.COLUMN_DEFAULT AS "defaultValue",
-  C.IS_NULLABLE AS "isNullable"
+  CHARACTER_MAXIMUM_LENGTH AS size,
+  TABLE_SCHEMA AS "schema",
+  COLUMN_DEFAULT AS "defaultValue",
+  IS_NULLABLE AS "isNullable"
 FROM
-  INFORMATION_SCHEMA.COLUMNS C
+  INFORMATION_SCHEMA.COLUMNS
 WHERE
-  C.TABLE_SCHEMA = '${p => p.schema}'
-  AND C.TABLE_NAME = '${p => p.label}'
+  TABLE_SCHEMA = '${p => p.schema}'
+  AND TABLE_NAME = '${p => p.label}'
 ORDER BY
-  C.TABLE_NAME,
-  C.ORDINAL_POSITION
+  TABLE_NAME,
+  ORDINAL_POSITION
+`;
+
+const searchColumns: IQueries['searchColumns'] = queryFactory`
+SELECT COLUMN_NAME AS label,
+  '${ContextValue.COLUMN}' as type,
+  TABLE_NAME AS "table",
+  TABLE_SCHEMA AS "schema",
+  DATA_TYPE AS "dataType",
+  IS_NULLABLE AS "isNullable"
+FROM
+  INFORMATION_SCHEMA.COLUMNS
+WHERE 1 = 1
+${
+  p => p.search
+    ? `AND (
+    LOWER(T.name || '.' || C.name) LIKE '%${p.search.toLowerCase()}%'
+    OR LOWER(C.name) LIKE '%${p.search.toLowerCase()}%'
+  )`
+    : ''
+  }
+ORDER BY
+  TABLE_NAME,
+  ORDINAL_POSITION
 `;
 
 const fetchRecords: IQueries['fetchRecords'] = queryFactory`
@@ -45,69 +81,83 @@ SELECT count(1) AS total
 FROM ${p => p.table.schema}.${p => (p.table.label || p.table)}
 `;
 
-const fetchAnyItems = <T>(type: ContextValue, isView: boolean, name: string, func: string): QueryBuilder<NSDatabase.ISchema, T> => queryFactory`
+const fetchAnyItems = <T1, T2>(type: ContextValue): QueryBuilder<T1, T2> => queryFactory`
 SELECT 
-  ${name} AS label,
-  SCHEMA_NAME AS "schema",
-  '${type}' as "type",
-  '${isView ? 'TRUE' : 'FALSE'}' as isView
-FROM %SQL_MANAGER.${func}()
-WHERE SCHEMA_NAME = '${p => p.schema}'
+  ${p => p.schema || p.search && p.search.includes('.')
+    ? `
+      ${ValueColumn[type]} AS label, 
+      SCHEMA_NAME AS "schema",
+      '${type}' AS "type",
+      ${type == ContextValue.VIEW ? `'TRUE'` : 'NULL'} AS isView,
+      '0:' || ${ValueColumn[type]} AS sortText
+      `
+    : `
+      DISTINCT BY(SCHEMA_NAME)
+      %EXACT(SCHEMA_NAME) AS label,
+      %EXACT(SCHEMA_NAME) AS "schema",
+      '${ContextValue.SCHEMA}' AS "type",
+      '0:' || SCHEMA_NAME AS sortText
+      `
+  }
+FROM ${Functions[type]}(${p => p.showSystem ? 1 : 0}${p => p.search ? `, '*${p.search}*'` : p.schema ? `, '${p.schema}.*'` : ''})
 ORDER BY
-  ${name}
+${p => p.schema || p.search && p.search.includes('.') ? ValueColumn[type] : 'SCHEMA_NAME'}
 `;
 
-const fetchTables = fetchAnyItems<NSDatabase.ITable>(ContextValue.TABLE, false, 'TABLE_NAME', 'TablesTree');
-const fetchViews = fetchAnyItems<NSDatabase.ITable>(ContextValue.TABLE, true, 'VIEW_NAME', 'ViewsTree');
-const fetchFunctions = fetchAnyItems<NSDatabase.IProcedure>(ContextValue.FUNCTION, false, 'PROCEDURE_NAME', 'ProceduresTree');
+const fetchTables = fetchAnyItems<ISchema, NSDatabase.ITable>(ContextValue.TABLE);
+const fetchViews = fetchAnyItems<ISchema, NSDatabase.ITable>(ContextValue.VIEW);
+const fetchFunctions = fetchAnyItems<ISchema, NSDatabase.IProcedure>(ContextValue.FUNCTION);
+
+const searchHelper = (p: { [key: string]: any }, type: ContextValue) => `
+SELECT 
+  ${p.schema || p.search && p.search.includes('.')
+    ? `
+      ${ValueColumn[type]} AS label, 
+      SCHEMA_NAME AS "schema",
+      '${type}' AS "type",
+      ${type == ContextValue.VIEW ? '1' : '0'} AS isView,
+      '0:' || ${ValueColumn[type]} AS sortText
+      `
+    : `
+      DISTINCT BY(SCHEMA_NAME)
+      %EXACT(SCHEMA_NAME) AS label,
+      %EXACT(SCHEMA_NAME) AS "schema",
+      '${ContextValue.SCHEMA}' AS "type",
+      '0:' || SCHEMA_NAME AS sortText
+      `
+  }
+FROM ${Functions[type]}(${p.showSystem ? 1 : 0}${p.search ? `, '${p.search}*'` : p.schema ? `, '${p.schema}.*'` : ''})
+`;
 
 const searchTables: IQueries['searchTables'] = queryFactory`
-SELECT name AS label,
-  type
-FROM sqlite_master
-${p => p.search ? `WHERE LOWER(name) LIKE '%${p.search.toLowerCase()}%'` : ''}
-ORDER BY name
-`;
-const searchColumns: IQueries['searchColumns'] = queryFactory`
-SELECT C.name AS label,
-  T.name AS "table",
-  C.type AS dataType,
-  C."notnull" AS isNullable,
-  C.pk AS isPk,
-  '${ContextValue.COLUMN}' as type
-FROM sqlite_master AS T
-LEFT OUTER JOIN pragma_table_info((T.name)) AS C ON 1 = 1
-WHERE 1 = 1
-${p => p.tables.filter(t => !!t.label).length
-    ? `AND LOWER(T.name) IN (${p.tables.filter(t => !!t.label).map(t => `'${t.label}'`.toLowerCase()).join(', ')})`
-    : ''
-  }
-${p => p.search
-    ? `AND (
-    LOWER(T.name || '.' || C.name) LIKE '%${p.search.toLowerCase()}%'
-    OR LOWER(C.name) LIKE '%${p.search.toLowerCase()}%'
-  )`
-    : ''
-  }
-ORDER BY C.name ASC,
-  C.cid ASC
-LIMIT ${p => p.limit || 100}
+${p => searchHelper(p, ContextValue.TABLE)}
+ORDER BY sortText
 `;
 
-const fetchTypedSchemas = (type: ContextValue, func: string): IQueries['fetchSchemas'] => queryFactory`
-SELECT 
-  DISTINCT BY (SCHEMA_NAME) 
+const searchEverything: IQueries['searchTables'] = queryFactory`
+${p => searchHelper(p, ContextValue.TABLE)}
+UNION
+${p => searchHelper(p, ContextValue.VIEW)}
+UNION
+${p => searchHelper(p, ContextValue.FUNCTION)}
+ORDER BY sortText
+`;
+
+
+const fetchTypedSchemas = (type: ContextValue): IQueries['fetchSchemas'] => queryFactory`
+SELECT
+DISTINCT BY(SCHEMA_NAME)
   %EXACT(SCHEMA_NAME) AS label,
   %EXACT(SCHEMA_NAME) AS "schema",
   '${ContextValue.SCHEMA}' as "type",
   '${type}' as "childType",
   'folder' as iconId
-FROM %SQL_MANAGER.${func}()
+FROM ${Functions[type]} (${p => p.showSystem ? 1 : 0})
 `;
 
-const fetchTableSchemas = fetchTypedSchemas(ContextValue.TABLE, 'TablesTree');
-const fetchViewSchemas = fetchTypedSchemas(ContextValue.VIEW, 'ViewsTree');
-const fetchFunctionSchemas = fetchTypedSchemas(ContextValue.FUNCTION, 'ProceduresTree');
+const fetchTableSchemas = fetchTypedSchemas(ContextValue.TABLE);
+const fetchViewSchemas = fetchTypedSchemas(ContextValue.VIEW);
+const fetchFunctionSchemas = fetchTypedSchemas(ContextValue.FUNCTION);
 
 export default {
   describeTable,
@@ -118,6 +168,7 @@ export default {
   fetchFunctions,
   fetchViews,
   searchTables,
+  searchEverything,
   searchColumns,
   fetchTableSchemas,
   fetchViewSchemas,

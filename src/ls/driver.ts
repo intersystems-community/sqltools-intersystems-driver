@@ -4,12 +4,15 @@ import { IConnectionDriver, MConnectionExplorer, NSDatabase, ContextValue, Arg0 
 import { v4 as generateId } from 'uuid';
 import IRISdb, { IRISDirect, IQueries } from './irisdb';
 import keywordsCompletion from './keywords';
-// import { workspace } from "vscode";
+
+const toBool = (v: any) => v && (v.toString() === '1' || v.toString().toLowerCase() === 'true' || v.toString().toLowerCase() === 'yes');
 
 type DriverOptions = any;
+
 export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> implements IConnectionDriver {
 
   queries: IQueries = queries;
+  private showSystem = false;
 
   public async open() {
     if (this.connection) {
@@ -18,19 +21,10 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
 
     const { namespace } = this.credentials;
     let config: IRISDirect;
+    this.showSystem = this.credentials.showSystem || false;
+
     if (this.credentials.serverName) {
-      // const serverName = this.credentials.serverName;
-      // const server = workspace.getConfiguration(`intersystems.servers.${serverName}.webServer`);
-      // let { scheme, host, port, pathPrefix, username, password } = server;
-      // config = {
-      //   https: scheme === "https",
-      //   host,
-      //   port,
-      //   pathPrefix,
-      //   namespace,
-      //   username,
-      //   password
-      // };
+      throw new Error("not supported");
     } else {
       let { https, server: host, port, pathPrefix, username, password } = this.credentials;
       config = {
@@ -60,16 +54,13 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
   }
 
   private splitQueries(queries: string): string[] {
-    if (!queries.includes(';')) {
-      return [queries]
-    }
-
-    return queries.split(/;\s*\n/gm).filter(query => query.trim().length);
+    return queries.split(/;\s*(\n|$)/gm).filter(query => query.trim().length);
   }
 
   public query: (typeof AbstractDriver)['prototype']['query'] = async (queries, opt = {}) => {
     const irisdb = await this.open();
-    const queriesResults = await Promise.all(this.splitQueries(queries.toString()).map(query => irisdb.query(query, [])));
+    const listQueries = this.splitQueries(queries.toString());
+    const queriesResults = await Promise.all(listQueries.map(query => irisdb.query(query, [])));
     const resultsAgg: NSDatabase.IResult[] = [];
     queriesResults.forEach(queryResult => {
       resultsAgg.push({
@@ -114,30 +105,40 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
       case ContextValue.TABLE:
       case ContextValue.VIEW:
         return this.getColumns(item as NSDatabase.ITable);
+      case ContextValue.FUNCTION:
+        return [];
     }
     return [];
   }
 
   private async getSchemas({ item }: Arg0<IConnectionDriver['getChildrenForItem']>) {
+    item['showSystem'] = this.showSystem;
+
     switch (item.childType) {
       case ContextValue.TABLE:
-        return this.queryResults(this.queries.fetchTableSchemas());
+        return this.queryResults(this.queries.fetchTableSchemas(item as NSDatabase.IDatabase));
       case ContextValue.VIEW:
-        return this.queryResults(this.queries.fetchViewSchemas());
+        return this.queryResults(this.queries.fetchViewSchemas(item as NSDatabase.IDatabase));
       case ContextValue.FUNCTION:
-        return this.queryResults(this.queries.fetchFunctionSchemas());
+        return this.queryResults(this.queries.fetchFunctionSchemas(item as NSDatabase.IDatabase));
     }
     return [];
   }
 
   private async getChildrenForSchema({ item }: Arg0<IConnectionDriver['getChildrenForItem']>) {
+    item['showSystem'] = this.showSystem;
+
     switch (item.childType) {
       case ContextValue.TABLE:
         return this.queryResults(this.queries.fetchTables(item as NSDatabase.ISchema));
       case ContextValue.VIEW:
         return this.queryResults(this.queries.fetchViews(item as NSDatabase.ISchema));
       case ContextValue.FUNCTION:
-        return this.queryResults(this.queries.fetchFunctions(item as NSDatabase.ISchema));
+        return this.queryResults(this.queries.fetchFunctions(item as NSDatabase.ISchema)).then(r => r.map(t => {
+          t.childType = ContextValue.NO_CHILD;
+          t["snippet"] = "Testing";
+          return t;
+        }));
     }
     return [];
   }
@@ -145,13 +146,17 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
   /**
    * This method is a helper for intellisense and quick picks.
    */
-  public async searchItems(itemType: ContextValue, _search: string, _extraParams: any = {}): Promise<NSDatabase.SearchableItem[]> {
+  public async searchItems(itemType: ContextValue, search: string, extraParams: any = {}): Promise<NSDatabase.SearchableItem[]> {
     switch (itemType) {
       case ContextValue.TABLE:
+      case ContextValue.FUNCTION:
       case ContextValue.VIEW:
-        return []
+        return this.queryResults(this.queries.searchEverything({ search, showSystem: this.showSystem })).then(r => r.map(t => {
+          t.isView = toBool(t.isView);
+          return t;
+        }));
       case ContextValue.COLUMN:
-        return [];
+        return this.queryResults(this.queries.searchColumns({ search, ...extraParams }));
     }
     return [];
   }
