@@ -1,0 +1,59 @@
+{
+  "folders": [
+    {
+      "path": ".",
+      "name": "root"
+    }
+  ],
+  "settings": {
+    "sqltools.useNodeRuntime": true,
+    "sqltools.format": {
+      "reservedWordCase": "upper",
+      "linesBetweenQueries": "preserve"
+    },
+    "sqltools.debug": {
+      "namespaces": "*"
+    },
+    "sqltools.connections": [
+      {
+        "askForPassword": false,
+        "connectionMethod": "Server and Port",
+        "driver": "InterSystems IRIS",
+        "name": "Caché 2016.2",
+        "namespace": "SAMPLES",
+        "password": "SYS",
+        "port": 57772,
+        "previewLimit": 50,
+        "server": "localhost",
+        "showSystem": false,
+        "username": "_SYSTEM"
+      },
+      {
+        "askForPassword": false,
+        "connectionMethod": "Server and Port",
+        "driver": "InterSystems IRIS",
+        "name": "Caché 2018.1",
+        "namespace": "SAMPLES",
+        "password": "SYS",
+        "port": 57773,
+        "previewLimit": 50,
+        "server": "localhost",
+        "showSystem": false,
+        "username": "_SYSTEM"
+      },
+      {
+        "askForPassword": false,
+        "connectionMethod": "Server and Port",
+        "driver": "InterSystems IRIS",
+        "name": "InterSystems IRIS",
+        "namespace": "USER",
+        "password": "SYS",
+        "port": 52773,
+        "previewLimit": 50,
+        "server": "localhost",
+        "showSystem": false,
+        "username": "_SYSTEM"
+      }
+    ]
+  }
+}

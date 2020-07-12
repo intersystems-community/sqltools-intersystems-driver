@@ -30,8 +30,13 @@
       "title": "Connect using",
       "type": "string",
       "minLength": 1,
-      "enum": ["Server and Port", "Server Name"],
+      "enum": ["Server and Port"],
       "default": "Server and Port"
+    },
+    "showSystem": {
+      "title": "Show system items?",
+      "type": "boolean",
+      "default": false
     }
   },
   "dependencies": {
@@ -57,20 +62,7 @@
             "username": { "$ref": "#/definitions/username" },
             "askForPassword": { "$ref": "#/definitions/askForPassword" }
           },
-          "required": ["server", "port", "namespace", "username"]
-        },
-        {
-          "properties": {
-            "connectionMethod": {
-              "enum": ["Server Name"]
-            },
-            "serverName": {
-              "title": "Server Name",
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          "required": ["serverName"]
+          "required": ["server", "port", "username"]
         }
       ]
     },
