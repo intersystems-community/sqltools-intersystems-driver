@@ -51,7 +51,7 @@
         "port": 52773,
         "previewLimit": 50,
         "server": "localhost",
-        "showSystem": false,
+        "showSystem": true,
         "username": "_SYSTEM"
       }
     ]

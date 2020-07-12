@@ -2,13 +2,14 @@ version: "3.7"
 services: 
   cache16: 
     image: daimor/intersystems-cache:2016.2
-    volumes: 
-      - ~/cache.key:/usr/cachesys/mgr/cache.key
     ports:
       - 57772:57772
   cache18: 
     image: daimor/intersystems-cache:2018.1
-    volumes: 
-      - ~/cache.key:/usr/cachesys/mgr/cache.key
     ports:
       - 57773:57772
+  iris:
+    build: iris
+    init: true
+    ports:
+      - 52773:52773
