@@ -174,4 +174,13 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
   public getStaticCompletions: IConnectionDriver['getStaticCompletions'] = async () => {
     return keywordsCompletion;
   }
+
+  public async getInsertQuery({item, columns}): Promise<string> {
+    let insertQuery = `INSERT INTO ${item.schema}.${item.label} (${columns.map((col) => col.label).join(', ')}) VALUES (`;
+    columns.forEach((col, index) => {
+      insertQuery = insertQuery.concat(`'\${${index + 1}:${col.label}:${col.dataType}}', `);
+    });
+    return insertQuery;
+  }
+
 }

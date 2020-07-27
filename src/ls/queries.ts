@@ -87,6 +87,7 @@ SELECT
     ? `
       ${ValueColumn[type]} AS label, 
       SCHEMA_NAME AS "schema",
+      SCHEMA_NAME || '.' || ${ValueColumn[type]} AS "snippet",
       '${type}' AS "type",
       ${type == ContextValue.VIEW ? `'TRUE'` : 'NULL'} AS isView,
       '0:' || ${ValueColumn[type]} AS sortText
