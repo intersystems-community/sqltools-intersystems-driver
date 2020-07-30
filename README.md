@@ -1,20 +1,39 @@
 # SQLTools intersystems-iris-driver Driver
 
-## Creating icon
+## Installation
+- [Install SQLTools in VS Code from the Marketplace](https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools)
+- Install the InterSystems extension to SQLTools (pre-release version)
+  - [Go to the GitHub releases page](https://github.com/intersystems-community/sqltools-intersystems-driver/releases)
+  - Expand Assets triangle for the latest version
+  - Download the file ending in `.vsix`
+  - Drag the downloaded file onto VS Code
 
-PNG Images
-Size: 64x64px
-Default Icon: Opacity 100%, no margins and paddings
-Active icon: Opacity 100%, no margins and paddings, green (#00FF00) circle 24x24 bottom right
-Inactive icon: Opacity 50%, no margins and paddings
+## Configuration
 
-## Creating connectino schema for the assistant
+- Click the SQLTools icon in the Activity pane (left side of VS Code)  
+  ![SQLTools icon in Activity pane](docs/assets/img/activitybar.png)
+- Click "Add new connection"  
+  ![Add connection button](docs/assets/img/addconnection.png)
+- Click InterSystems IRIS
+- Fill out connection information
+- Test the connection
 
-We are using `@rjsf/core` to render the forms, so in order to add you driver to the connection assistant,
-edit `connection.schema.json` and `ui.schema.json`.
+## Use
 
-See https://react-jsonschema-form.readthedocs.io/en/latest/ for more instructions.
+With a connection defined, you can now write SQL, browse tables, etc.
 
-## Publish the driver
+### To write raw SQL
+- Click the "New SQL file" icon
+- Write your SQL statement
+- Click "Run on active connection"
+- Or, select the SQL statement text, and execute it
+  - either right-click and select "Run selected query" from the contentual menu
+  - or type Command-E, Command-E (Mac)
+  - or type Ctrl-E, Ctrl-E (Windows)
 
-See https://code.visualstudio.com/api/working-with-extensions/publishing-extension
+### To browse tables
+
+- Click on your connection
+- Click on "Tables"
+- Right-click on the table of interest
+- From the contextual menu, select "Show table records"
