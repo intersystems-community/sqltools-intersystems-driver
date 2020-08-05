@@ -6,7 +6,8 @@
   - [Go to the GitHub releases page](https://github.com/intersystems-community/sqltools-intersystems-driver/releases)
   - Expand Assets triangle for the latest version
   - Download the file ending in `.vsix`
-  - Drag the downloaded file onto VS Code
+  - Click on the Extensions icon in the Activity pane
+  - In the Extensions pane, at the top right, click the "..." menu and select "Install from VSIX..."
 
 ## Configuration
 
@@ -17,6 +18,7 @@
 - Click InterSystems IRIS
 - Fill out connection information
 - Test the connection
+- Save the connection
 
 ## Use
 
