@@ -1,13 +1,29 @@
-# SQLTools intersystems-iris-driver Driver
+# SQLTools Driver for InterSystems IRIS
+
+## Overview
+
+[InterSystems IRIS](https://www.intersystems.com/products/intersystems-iris/) makes it easier to build high-performance, machine learning-enabled applications that connect data and application silos.
+
+It provides high performance [database management, interoperability, and analytics capabilities](https://www.intersystems.com/products/intersystems-iris/#technology), all built-in from the ground up to speed and simplify your most demanding data-intensive applications.
+
+As a complete, cloud-first data platform, InterSystems IRIS eliminates the need to integrate multiple technologies, resulting in less code, fewer system resources, less maintenance, and higher ROI.
+
+Try out the [SQL QuickStart](https://gettingstarted.intersystems.com/language-quickstarts/sql-quickstart/) and explore more [getting started exercises](https://gettingstarted.intersystems.com).
 
 ## Installation
+
 - [Install SQLTools in VS Code from the Marketplace](https://marketplace.visualstudio.com/items?itemName=mtxr.sqltools)
-- Install the InterSystems extension to SQLTools (pre-release version)
-  - [Go to the GitHub releases page](https://github.com/intersystems-community/sqltools-intersystems-driver/releases)
-  - Expand Assets triangle for the latest version
-  - Download the file ending in `.vsix`
-  - Click on the Extensions icon in the Activity pane
-  - In the Extensions pane, at the top right, click the "..." menu and select "Install from VSIX..."
+- Install the InterSystems extension to SQLTools
+  - Install a published version from within VS Code
+    - Click on the Extensions icon in your Activity pane
+    - Search for SQLTools
+    - Find InterSystems and click on Install
+  - Or install a beta version
+    - [Go to the GitHub releases page](https://github.com/intersystems-community/sqltools-intersystems-driver/releases)
+    - Expand Assets triangle for the latest version
+    - Download the file ending in `.vsix`
+    - Click on the Extensions icon in the Activity pane
+    - In the Extensions pane, at the top right, click the "..." menu and select "Install from VSIX..."
 
 ## Configuration
 
