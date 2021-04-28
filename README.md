@@ -28,9 +28,9 @@ Try out the [SQL QuickStart](https://gettingstarted.intersystems.com/language-qu
 ## Configuration
 
 - Click the SQLTools icon in the Activity pane (left side of VS Code)  
-  ![SQLTools icon in Activity pane](docs/assets/img/activitybar.png)
+  ![SQLTools icon in Activity pane](https://raw.githubusercontent.com/intersystems-community/sqltools-intersystems-driver/master/docs/assets/img/activitybar.png)
 - Click "Add new connection"  
-  ![Add connection button](docs/assets/img/addconnection.png)
+  ![Add connection button](https://raw.githubusercontent.com/intersystems-community/sqltools-intersystems-driver/master/docs/assets/img/addconnection.png)
 - Click InterSystems IRIS
 - Fill out connection information
 - Test the connection
