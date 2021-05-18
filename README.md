@@ -29,8 +29,9 @@ Try out the [SQL QuickStart](https://gettingstarted.intersystems.com/language-qu
 
 - Click the SQLTools icon in the Activity pane (left side of VS Code)  
   ![SQLTools icon in Activity pane](https://raw.githubusercontent.com/intersystems-community/sqltools-intersystems-driver/master/docs/assets/img/activitybar.png)
-- Click "Add new connection"  
+- If you have no previous database connections, you will see an "Add new connection" button. Click that.  
   ![Add connection button](https://raw.githubusercontent.com/intersystems-community/sqltools-intersystems-driver/master/docs/assets/img/addconnection.png)
+- If you already have other connections defined, you won't see the button. Instead, open the command palette (Ctrl/Cmd+Shift+P) and run "SQLTools Management: Add New Connection" ![Add connection from command palette](https://raw.githubusercontent.com/intersystems-community/sqltools-intersystems-driver/master/docs/assets/img/command_palette_add_new.png)
 - Click InterSystems IRIS
 - Fill out connection information
 - Test the connection
