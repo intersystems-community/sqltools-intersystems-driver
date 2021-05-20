@@ -2,7 +2,7 @@
   "name": "sqltools-intersystems-driver",
   "displayName": "SQLTools InterSystems IRIS",
   "description": "SQLTools Driver for InterSystems IRIS",
-  "version": "0.1.1-SNAPSHOT",
+  "version": "0.1.2-SNAPSHOT",
   "engines": {
     "vscode": "^1.46.0"
   },
