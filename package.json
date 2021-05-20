@@ -2,7 +2,7 @@
   "name": "sqltools-intersystems-driver",
   "displayName": "SQLTools InterSystems IRIS",
   "description": "SQLTools Driver for InterSystems IRIS",
-  "version": "0.0.3-SNAPSHOT",
+  "version": "0.1.1-SNAPSHOT",
   "engines": {
     "vscode": "^1.46.0"
   },
@@ -11,7 +11,11 @@
   "repository": {},
   "bugs": {},
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "clean": "rimraf -rf out dist *.vsix",
+    "vscode:prepublish": "webpack --mode production",
+    "webpack": "webpack --mode development",
+    "webpack-dev": "webpack --mode development --watch",
+    "test-compile": "tsc -p ./",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "package": "vsce package -o sqltools-intersystems-driver.vsix",
@@ -36,22 +40,27 @@
     "onLanguage:sql",
     "onCommand:sqltools.*"
   ],
-  "main": "./out/extension.js",
-  "ls": "./out/ls/plugin.js",
+  "main": "./dist/extension.js",
+  "ls": "./dist/ls/plugin.js",
   "dependencies": {
-    "@sqltools/base-driver": "^0.1.8",
+    "@babel/core": "^7.14.3",
+    "@sqltools/base-driver": "^0.1.10",
     "@sqltools/types": "^0.1.5",
     "@types/request": "^2.48.5",
-    "@types/request-promise": "^4.1.46",
+    "@types/request-promise": "^4.1.47",
     "request": "^2.88.2",
-    "request-promise": "^4.2.5",
+    "request-promise": "^4.2.6",
     "uuid": "^7.0.2"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.5.5",
-    "@types/node": "^14.0.14",
+    "@babel/preset-env": "^7.14.2",
+    "@types/node": "^14.17.0",
     "@types/vscode": "^1.46.0",
-    "typescript": "^3.7.3",
-    "vsce": "^1.88.0"
+    "rimraf": "^3.0.2",
+    "ts-loader": "^9.2.1",
+    "typescript": "^3.9.9",
+    "vsce": "^1.88.0",
+    "webpack": "^5.37.1",
+    "webpack-cli": "^4.7.0"
   }
 }

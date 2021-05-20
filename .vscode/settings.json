@@ -7,5 +7,20 @@
         "out": true // set this to false to include "out" folder in search results
     },
     // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
-    "typescript.tsc.autoDetect": "off"
+    "typescript.tsc.autoDetect": "off",
+    "sqltools.connections": [
+        {
+            "namespace": "USER",
+            "connectionMethod": "Server and Port",
+            "showSystem": false,
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 52773,
+            "askForPassword": false,
+            "driver": "InterSystems IRIS",
+            "name": "iris",
+            "username": "_SYSTEM",
+            "password": "SYS"
+        }
+    ]
 }
