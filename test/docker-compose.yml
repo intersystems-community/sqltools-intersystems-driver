@@ -14,6 +14,7 @@ services:
       - ~/cache.key:/usr/cachesys/mgr/cache.key
   iris:
     build: iris
+    command: --check-caps false
     init: true
     ports:
       - 52773:52773
