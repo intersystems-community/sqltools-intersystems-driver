@@ -35,7 +35,8 @@
   "keywords": [
     "intersystems-iris-driver",
     "intersystems",
-    "sqltools-driver", "sql"
+    "sqltools-driver",
+    "sql"
   ],
   "categories": [
     "Programming Languages",
