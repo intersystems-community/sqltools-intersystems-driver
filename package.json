@@ -4,12 +4,23 @@
   "description": "SQLTools Driver for InterSystems IRIS",
   "version": "0.1.2-SNAPSHOT",
   "engines": {
-    "vscode": "^1.46.0"
+    "vscode": "^1.66.0"
   },
   "publisher": "intersystems-community",
-  "license": "MIT",
-  "repository": {},
-  "bugs": {},
+  "license": "SEE LICENSE IN LICENSE",
+  "homepage": "https://github.com/intersystems-community/sqltools-intersystems-driver#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/intersystems-community/sqltools-intersystems-driver.git"
+  },
+  "bugs": {
+    "url": "https://github.com/intersystems-community/sqltools-intersystems-driver/issues"
+  },
+  "galleryBanner": {
+    "color": "#2E2A90",
+    "theme": "dark"
+  },
+  "icon": "icons/sqltools.png",
   "scripts": {
     "clean": "rimraf -rf out dist *.vsix",
     "vscode:prepublish": "webpack --mode production",
@@ -24,7 +35,7 @@
   "keywords": [
     "intersystems-iris-driver",
     "intersystems",
-    "sqltools-driver"
+    "sqltools-driver", "sql"
   ],
   "categories": [
     "Programming Languages",
