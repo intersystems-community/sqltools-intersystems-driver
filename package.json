@@ -7,7 +7,7 @@
     "vscode": "^1.66.0"
   },
   "publisher": "intersystems-community",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "homepage": "https://github.com/intersystems-community/sqltools-intersystems-driver#readme",
   "repository": {
     "type": "git",
