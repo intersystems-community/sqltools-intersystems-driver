@@ -148,13 +148,23 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
    */
   public async searchItems(itemType: ContextValue, search: string, extraParams: any = {}): Promise<NSDatabase.SearchableItem[]> {
     switch (itemType) {
+      case ContextValue.DATABASE:
+        // Syntatically, a schema in IRIS SQL resembles a database in other databases.
+        // That's the simplest way to adapt IRIS SQL to the generic Hue parser vscode-sqltools uses.
+        return this.queryResults(this.queries.searchEverything({ search, showSystem: this.showSystem }));
       case ContextValue.TABLE:
       case ContextValue.FUNCTION:
       case ContextValue.VIEW:
-        return this.queryResults(this.queries.searchEverything({ search, showSystem: this.showSystem })).then(r => r.map(t => {
-          t.isView = toBool(t.isView);
-          return t;
-        }));
+        const searchParams = { search, showSystem: this.showSystem, itemType, ...extraParams };
+        if (extraParams['database']) {
+          searchParams['schema'] = extraParams['database'];
+        }
+        return this.queryResults(this.queries.searchEverything(searchParams)).then(r => r
+          .filter(r => r.type === itemType)
+          .map(t => {
+            t.isView = toBool(t.isView);
+            return t;
+          }));
       case ContextValue.COLUMN:
         return this.queryResults(this.queries.searchColumns({ search, ...extraParams }));
     }

@@ -61,15 +61,35 @@ WHERE 1 = 1
 ${
   p => p.search
     ? `AND (
-    LOWER(T.name || '.' || C.name) LIKE '%${p.search.toLowerCase()}%'
-    OR LOWER(C.name) LIKE '%${p.search.toLowerCase()}%'
+    LOWER(TABLE_NAME || '.' || COLUMN_NAME) LIKE '%${p.search.toLowerCase()}%'
+    OR LOWER(COLUMN_NAME) LIKE '%${p.search.toLowerCase()}%'
   )`
     : ''
   }
+${
+  p => p.tables ? 'AND (' +
+    p.tables.map(t => `TABLE_NAME = '${t.label}' and TABLE_SCHEMA = '${t.database}'`).join(' OR ')
+    + ")" : ''
+}
 ORDER BY
   TABLE_NAME,
   ORDINAL_POSITION
 `;
+
+const treeFunctionFilter = function(p: { [key: string]: any }): string {
+  if (p.schema || p.search) {
+    let filter = ", '";
+    if (p.schema) {
+      filter += p.schema + ".";
+    }
+    if (p.search) {
+      filter += p.search;
+    }
+    filter += "*'";
+    return filter;
+  }
+  return "";
+}
 
 const fetchRecords: IQueries['fetchRecords'] = queryFactory`
 SELECT TOP ${p => p.limit || 50} *
@@ -100,7 +120,7 @@ SELECT
       '0:' || SCHEMA_NAME AS sortText
       `
   }
-FROM ${Functions[type]}(${p => p.showSystem ? 1 : 0}${p => p.search ? `, '*${p.search}*'` : p.schema ? `, '${p.schema}.*'` : ''})
+FROM ${Functions[type]}(${p => p.showSystem ? 1 : 0}${p => treeFunctionFilter(p)})
 ORDER BY
 ${p => p.schema || p.search && p.search.includes('.') ? ValueColumn[type] : 'SCHEMA_NAME'}
 `;
@@ -127,7 +147,7 @@ SELECT
       '0:' || SCHEMA_NAME AS sortText
       `
   }
-FROM ${Functions[type]}(${p.showSystem ? 1 : 0}${p.search ? `, '${p.search}*'` : p.schema ? `, '${p.schema}.*'` : ''})
+FROM ${Functions[type]}(${p.showSystem ? 1 : 0}${treeFunctionFilter(p)})
 `;
 
 const searchTables: IQueries['searchTables'] = queryFactory`
@@ -135,7 +155,7 @@ ${p => searchHelper(p, ContextValue.TABLE)}
 ORDER BY sortText
 `;
 
-const searchEverything: IQueries['searchTables'] = queryFactory`
+const searchEverything: IQueries['searchEverything'] = queryFactory`
 ${p => searchHelper(p, ContextValue.TABLE)}
 UNION
 ${p => searchHelper(p, ContextValue.VIEW)}
