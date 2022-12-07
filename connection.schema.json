@@ -59,6 +59,11 @@
               "default": 52773,
               "type": "integer"
             },
+            "https": {
+              "title": "Use HTTPS",
+              "default": false,
+              "type": "boolean"
+            },
             "username": { "$ref": "#/definitions/username" },
             "askForPassword": { "$ref": "#/definitions/askForPassword" }
           },
