@@ -21,7 +21,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
     - name: Set an output
       id: set-version
@@ -61,12 +61,12 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         npx vsce package -o ${{ steps.set-version.outputs.name }}.vsix
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: runner.os == 'Linux'
       with:
         name: ${{ steps.set-version.outputs.name }}.vsix
         path: ${{ steps.set-version.outputs.name }}.vsix
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: runner.os == 'Linux'
       with:
         name: meta
@@ -78,7 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v3
       with:
         name: meta
         path: .
@@ -89,7 +89,7 @@ jobs:
         set -x
         echo ::set-output name=version::`cat .version`
         echo ::set-output name=name::`cat .name`
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v3
       with:
         name: ${{ steps.set-version.outputs.name }}.vsix
     - name: Create Release
