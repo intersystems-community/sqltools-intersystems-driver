@@ -20,8 +20,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
+    outputs:
+      name: ${{ steps.set-version.outputs.name }}
+      version: ${{ steps.set-version.outputs.version }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
     - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
     - name: Set an output
       id: set-version
@@ -45,7 +48,7 @@ jobs:
         echo $VERSION > .version
         echo $NAME > .name
     - name: Use Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v1
       with:
         node-version: 14.x
     - run: npm install
@@ -122,9 +125,6 @@ jobs:
     needs: build
     steps:
     - uses: actions/checkout@v3
-      with:
-        ref: master
-        token: ${{ secrets.TOKEN }}
     - uses: actions/download-artifact@v3
       with:
         name: meta
