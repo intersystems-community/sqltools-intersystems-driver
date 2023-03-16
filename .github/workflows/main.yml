@@ -124,7 +124,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
+      with:
+        ref: master
+        token: ${{ secrets.VSCE_TOKEN }}
     - uses: actions/download-artifact@v3
       with:
         name: meta
