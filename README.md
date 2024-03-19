@@ -2,11 +2,9 @@
 
 ## Overview
 
-[InterSystems IRIS](https://www.intersystems.com/products/intersystems-iris/) makes it easier to build high-performance, machine learning-enabled applications that connect data and application silos.
+As a complete, cloud-first data platform, InterSystems IRIS eliminates the need to integrate multiple technologies, resulting in less code, fewer system resources, less maintenance, and higher ROI. It provides high performance [database management, interoperability, and analytics capabilities](https://www.intersystems.com/products/intersystems-iris/#technology), all built-in from the ground up to speed and simplify your most demanding data-intensive applications.
 
-It provides high performance [database management, interoperability, and analytics capabilities](https://www.intersystems.com/products/intersystems-iris/#technology), all built-in from the ground up to speed and simplify your most demanding data-intensive applications.
-
-As a complete, cloud-first data platform, InterSystems IRIS eliminates the need to integrate multiple technologies, resulting in less code, fewer system resources, less maintenance, and higher ROI.
+This SQL driver offers a handy way to test out queries when you're coding in VS Code. It provides a nice "scratchpad" to test out syntax before putting the query into your ObjectScript, Java, or Python code, all without leaving the VS Code environment. Look elsewhere for a fully-functional SQL client.
 
 Try out the [SQL QuickStart](https://gettingstarted.intersystems.com/language-quickstarts/sql-quickstart/) and explore more [getting started exercises](https://gettingstarted.intersystems.com).
 
