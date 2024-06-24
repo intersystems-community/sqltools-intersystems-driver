@@ -61,8 +61,7 @@
     "@types/request": "^2.48.5",
     "@types/request-promise": "^4.1.47",
     "request": "^2.88.2",
-    "request-promise": "^4.2.6",
-    "uuid": "^7.0.2"
+    "request-promise": "^4.2.6"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.14.2",
