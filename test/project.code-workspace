@@ -42,16 +42,18 @@
         "username": "_SYSTEM"
       },
       {
-        "askForPassword": false,
-        "connectionMethod": "Server and Port",
-        "driver": "InterSystems IRIS",
-        "name": "InterSystems IRIS",
         "namespace": "USER",
-        "password": "SYS",
-        "port": 52773,
+        "connectionMethod": "Server and Port",
+        "showSystem": false,
+        "filter": "'Ens*",
         "previewLimit": 50,
         "server": "localhost",
-        "showSystem": true,
+        "port": 52773,
+        "https": false,
+        "askForPassword": false,
+        "driver": "InterSystems IRIS",
+        "name": "InterSystems IRIS",
+        "password": "SYS",
         "username": "_SYSTEM"
       }
     ]

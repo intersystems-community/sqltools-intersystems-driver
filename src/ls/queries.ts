@@ -14,6 +14,7 @@ ValueColumn[ContextValue.FUNCTION] = "PROCEDURE_NAME";
 
 interface ISchema extends NSDatabase.ISchema {
   showSystem: boolean;
+  filter: string;
 }
 
 const describeTable: IQueries['describeTable'] = queryFactory`
@@ -176,7 +177,7 @@ DISTINCT BY(SCHEMA_NAME)
   '${ContextValue.SCHEMA}' as "type",
   '${type}' as "childType",
   'folder' as iconId
-FROM ${Functions[type]} (${p => p.showSystem ? 1 : 0})
+FROM ${Functions[type]} (${p => p.showSystem ? 1 : 0}, '${p => (p.filter && p.filter != "") ? `${p.filter.replace("'", "''")}` : "*"}')
 `;
 
 const fetchTableSchemas = fetchTypedSchemas(ContextValue.TABLE);

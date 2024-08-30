@@ -37,6 +37,15 @@
       "title": "Show system items?",
       "type": "boolean",
       "default": false
+    },
+    "filter": {
+      "title": "Filter",
+      "type": "string",
+      "examples": [
+        "'Ens*",
+        "'HS*"
+      ],
+      "description": "* 0 or more characters, _ any one character, ' NOT pattern"
     }
   },
   "dependencies": {
