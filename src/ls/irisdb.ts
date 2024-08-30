@@ -56,7 +56,7 @@ export default class IRISdb {
     params?: any,
     headers?: any
   ): Promise<any> {
-    const { https, host, port, username, password } = this.config;
+    const { https, host, port, pathPrefix, username, password } = this.config;
     if (minVersion > this.apiVersion) {
       return Promise.reject(`${path} not supported by API version ${this.apiVersion}`);
     }
@@ -95,7 +95,7 @@ export default class IRISdb {
       maxSockets: 10,
       rejectUnauthorized: https,
     });
-    path = encodeURI(`/api/atelier/${path || ""}${buildParams()}`);
+    path = encodeURI(`${pathPrefix || ""}/api/atelier/${path || ""}${buildParams()}`);
 
     const cookies = this.cookies;
     let auth;

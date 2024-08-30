@@ -57,16 +57,22 @@
               "enum": ["Server and Port"]
             },
             "server": {
-              "title": "Server Address",
+              "title": "Webserver address",
               "type": "string",
               "minLength": 1,
               "default": "localhost"
             },
             "port": {
-              "title": "WebServer Port",
+              "title": "Webserver port",
               "minimum": 1,
               "default": 52773,
               "type": "integer"
+            },
+            "pathPrefix": {
+              "title": "Path prefix (for shared webserver)",
+              "type": "string",
+              "pattern": "^(|\/.*[^\/])$",
+              "default": ""
             },
             "https": {
               "title": "Use HTTPS",
