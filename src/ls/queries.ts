@@ -93,8 +93,11 @@ const treeFunctionFilter = function(p: { [key: string]: any }): string {
 }
 
 const fetchRecords: IQueries['fetchRecords'] = queryFactory`
-SELECT TOP ${p => p.limit || 50} *
-FROM ${p => p.table.schema}.${p => (p.table.label || p.table)}
+SELECT * FROM (
+  SELECT TOP ALL *
+  FROM ${p => p.table.schema}.${p => (p.table.label || p.table)}
+)
+WHERE %vid BETWEEN ${p => (p.offset || 0) + 1} AND ${p => ((p.offset || 0) + (p.limit || 50))}
 `;
 
 const countRecords: IQueries['countRecords'] = queryFactory`
