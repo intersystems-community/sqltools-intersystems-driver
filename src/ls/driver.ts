@@ -13,6 +13,7 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
 
   queries: IQueries = queries;
   private showSystem = false;
+  private filter = "";
 
   public async open() {
     if (this.connection) {
@@ -22,6 +23,7 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
     const { namespace } = this.credentials;
     let config: IRISDirect;
     this.showSystem = this.credentials.showSystem || false;
+    this.filter = this.credentials.filter || "";
 
     if (this.credentials.serverName) {
       throw new Error("not supported");
@@ -113,6 +115,7 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
 
   private async getSchemas({ item }: Arg0<IConnectionDriver['getChildrenForItem']>) {
     item['showSystem'] = this.showSystem;
+    item['filter'] = this.filter;
 
     switch (item.childType) {
       case ContextValue.TABLE:
@@ -127,6 +130,7 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
 
   private async getChildrenForSchema({ item }: Arg0<IConnectionDriver['getChildrenForItem']>) {
     item['showSystem'] = this.showSystem;
+    item['filter'] = this.filter;
 
     switch (item.childType) {
       case ContextValue.TABLE:
@@ -151,11 +155,11 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
       case ContextValue.DATABASE:
         // Syntatically, a schema in IRIS SQL resembles a database in other databases.
         // That's the simplest way to adapt IRIS SQL to the generic Hue parser vscode-sqltools uses.
-        return this.queryResults(this.queries.searchEverything({ search, showSystem: this.showSystem }));
+        return this.queryResults(this.queries.searchEverything({ search, showSystem: this.showSystem, filter: this.filter }));
       case ContextValue.TABLE:
       case ContextValue.FUNCTION:
       case ContextValue.VIEW:
-        const searchParams = { search, showSystem: this.showSystem, itemType, ...extraParams };
+        const searchParams = { search, showSystem: this.showSystem, filter: this.filter, itemType, ...extraParams };
         if (extraParams['database']) {
           searchParams['schema'] = extraParams['database'];
         }
