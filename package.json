@@ -2,9 +2,9 @@
   "name": "sqltools-intersystems-driver",
   "displayName": "SQLTools InterSystems IRIS",
   "description": "SQLTools Driver for InterSystems IRIS",
-  "version": "0.1.8-SNAPSHOT",
+  "version": "0.2.0-SNAPSHOT",
   "engines": {
-    "vscode": "^1.66.0"
+    "vscode": "^1.93.0"
   },
   "publisher": "intersystems-community",
   "license": "MIT",
@@ -67,8 +67,9 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.14.2",
+    "@intersystems-community/intersystems-servermanager": "^3.8.0",
     "@types/node": "^14.17.0",
-    "@types/vscode": "^1.66.0",
+    "@types/vscode": "^1.93.0",
     "@vscode/vsce": "^2.19.0",
     "rimraf": "^3.0.2",
     "ts-loader": "^9.2.1",
