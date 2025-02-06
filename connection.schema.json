@@ -92,7 +92,8 @@
             "serverName": {
               "title": "Server name",
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "Name of a server definition configured using InterSystems Server Manager"
             }
           },
           "required": ["serverName"]
