@@ -30,8 +30,8 @@
       "title": "Connect using",
       "type": "string",
       "minLength": 1,
-      "enum": ["Server and Port", "Server Definition"],
-      "default": "Server and Port"
+      "enum": ["Server Definition", "Server and Port"],
+      "default": "Server Definition"
     },
     "showSystem": {
       "title": "Show system items?",
@@ -75,7 +75,7 @@
               "default": ""
             },
             "https": {
-              "title": "Use HTTPS",
+              "title": "Use HTTPS?",
               "default": false,
               "type": "boolean"
             },
