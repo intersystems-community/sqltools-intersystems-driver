@@ -25,20 +25,16 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
     this.showSystem = this.credentials.showSystem || false;
     this.filter = this.credentials.filter || "";
 
-    if (this.credentials.serverName) {
-      throw new Error("not supported");
-    } else {
-      let { https, server: host, port, pathPrefix, username, password } = this.credentials;
-      config = {
-        https,
-        host,
-        port,
-        pathPrefix,
-        namespace,
-        username,
-        password
-      };
-    }
+    let { https, server: host, port, pathPrefix, username, password } = this.credentials;
+    config = {
+      https,
+      host,
+      port,
+      pathPrefix,
+      namespace,
+      username,
+      password
+    };
 
     const irisdb = new IRISdb(config);
     return irisdb.open()

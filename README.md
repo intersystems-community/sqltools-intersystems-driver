@@ -30,10 +30,14 @@ Try out the [SQL QuickStart](https://gettingstarted.intersystems.com/language-qu
 - If you have no previous database connections, you will see an "Add new connection" button. Click that.  
   ![Add connection button](https://raw.githubusercontent.com/intersystems-community/sqltools-intersystems-driver/master/docs/assets/img/addconnection.png)
 - If you already have other connections defined, you won't see the button. Instead, open the command palette (Ctrl/Cmd+Shift+P) and run "SQLTools Management: Add New Connection" ![Add connection from command palette](https://raw.githubusercontent.com/intersystems-community/sqltools-intersystems-driver/master/docs/assets/img/command_palette_add_new.png)
-- Click InterSystems IRIS
-- Fill out connection information
-- Test the connection
-- Save the connection
+- Click InterSystems IRIS.
+- Fill out connection information:
+  - Namespace to work in.
+  - Connect using: "Server Definition" or "Server and Port"
+    - For "Server Definition", provide in "Server name" the name of a server configured using the InterSystems Server Manager extension. These server specs are stored in the `intersystems.servers` settings object.
+    - For "Server and Port", provide (as applicable) "Webserver address", "Webserver port", "Path prefix (for shared webserver)", "Use HTTPS", "Username", "Ask for password?" and "Password".
+- Test the connection.
+- Save the connection.
 
 ## Use
 

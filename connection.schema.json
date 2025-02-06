@@ -30,8 +30,8 @@
       "title": "Connect using",
       "type": "string",
       "minLength": 1,
-      "enum": ["Server and Port"],
-      "default": "Server and Port"
+      "enum": ["Server Definition", "Server and Port"],
+      "default": "Server Definition"
     },
     "showSystem": {
       "title": "Show system items?",
@@ -75,7 +75,7 @@
               "default": ""
             },
             "https": {
-              "title": "Use HTTPS",
+              "title": "Use HTTPS?",
               "default": false,
               "type": "boolean"
             },
@@ -83,6 +83,20 @@
             "askForPassword": { "$ref": "#/definitions/askForPassword" }
           },
           "required": ["server", "port", "username"]
+        },
+        {
+          "properties": {
+            "connectionMethod": {
+              "enum": ["Server Definition"]
+            },
+            "serverName": {
+              "title": "Server name",
+              "type": "string",
+              "minLength": 1,
+              "description": "Name of a server definition configured using InterSystems Server Manager"
+            }
+          },
+          "required": ["serverName"]
         }
       ]
     },
