@@ -58,12 +58,12 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         npx vsce package -o ${{ steps.set-version.outputs.name }}.vsix
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       if: runner.os == 'Linux'
       with:
         name: ${{ steps.set-version.outputs.name }}.vsix
         path: ${{ steps.set-version.outputs.name }}.vsix
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       if: runner.os == 'Linux'
       with:
         name: meta
