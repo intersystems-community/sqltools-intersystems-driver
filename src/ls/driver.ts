@@ -4,6 +4,7 @@ import { IConnectionDriver, MConnectionExplorer, NSDatabase, ContextValue, Arg0 
 import { v4 as generateId } from 'uuid';
 import IRISdb, { IRISDirect, IQueries } from './irisdb';
 import keywordsCompletion from './keywords';
+import zipObject from 'lodash/zipObject';
 
 const toBool = (v: any) => v && (v.toString() === '1' || v.toString().toLowerCase() === 'true' || v.toString().toLowerCase() === 'yes');
 
@@ -55,21 +56,48 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
     return queries.split(/;\s*(\n|$)/gm).filter(query => query.trim().length);
   }
 
+  // Handle duplicate column names by appending counter
+  private getColumnNames(columns: { name: string, type: string }[]): string[] {
+    return columns.reduce((names, { name }) => {
+      const count = names.filter((n) => n === name).length;
+      return names.concat(count > 0 ? `${name} (${count})` : name);
+    }, []);
+  }
+
+  // Modify to take account of deduplicated column names
+  private mapRows(rows: any[], columns: string[]): any[] {
+    return rows.map((r) => zipObject(columns, r));
+  }
+
   public query: (typeof AbstractDriver)['prototype']['query'] = async (queries, opt = {}) => {
     const irisdb = await this.open();
     const listQueries = this.splitQueries(queries.toString());
     const queriesResults = await Promise.all(listQueries.map(query => irisdb.query(query, [])));
     const resultsAgg: NSDatabase.IResult[] = [];
     queriesResults.forEach(queryResult => {
-      resultsAgg.push({
-        cols: queryResult.length ? Object.keys(queryResult[0]) : [],
-        connId: this.getId(),
-        messages: [{ date: new Date(), message: `Query ok with ${queryResult.length} results` }],
-        results: queryResult,
-        query: queries.toString(),
-        requestId: opt.requestId,
-        resultId: generateId(),
-      });
+      if (irisdb.apiVersion < 6) {
+        resultsAgg.push({
+          cols: queryResult.content.length ? Object.keys(queryResult.content[0]) : [],
+          connId: this.getId(),
+          messages: [{ date: new Date(), message: `Query ok with ${queryResult.content.length} results` }],
+          results: queryResult.content,
+          query: queries.toString(),
+          requestId: opt.requestId,
+          resultId: generateId(),
+        });
+      }
+      else {
+        const cols = this.getColumnNames(queryResult[0].columns || []);
+        resultsAgg.push({
+          cols,
+          connId: this.getId(),
+          messages: [{ date: new Date(), message: `Query ok with ${queryResult[0]?.content.length ?? 'no'} results` }],
+          results: this.mapRows(queryResult[0]?.content, cols),
+          query: queries.toString(),
+          requestId: opt.requestId,
+          resultId: generateId(),
+        });
+      }
     });
 
     return resultsAgg;
