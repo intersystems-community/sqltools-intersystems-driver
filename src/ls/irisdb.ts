@@ -27,7 +27,11 @@ export default class IRISdb {
 
   private config: IRISDirect;
   private cookies: string[] = [];
-  private apiVersion = 1;
+  private _apiVersion = 1;
+
+  public get apiVersion() {
+    return this._apiVersion;
+  }
 
   public constructor(config: IRISDirect) {
     this.config = config;
@@ -57,11 +61,11 @@ export default class IRISdb {
     headers?: any
   ): Promise<any> {
     const { https, host, port, pathPrefix, username, password } = this.config;
-    if (minVersion > this.apiVersion) {
-      return Promise.reject(`${path} not supported by API version ${this.apiVersion}`);
+    if (minVersion > this._apiVersion) {
+      return Promise.reject(`${path} not supported by API version ${this._apiVersion}`);
     }
     if (minVersion && minVersion > 0) {
-      path = `v${this.apiVersion}/${path}`;
+      path = `v${this._apiVersion}/${path}`;
     }
 
     headers = {
@@ -169,7 +173,7 @@ export default class IRISdb {
             You must select one of the following: ${data.namespaces.join(", ")}.`,
           };
         }
-        this.apiVersion = data.api;
+        this._apiVersion = data.api;
         return info;
       }
     });
@@ -183,7 +187,7 @@ export default class IRISdb {
     return this.request(1, "POST", `${this.config.namespace}/action/query`, {
       parameters,
       query,
-    }).then(data => data.result.content)
+    }, this._apiVersion >= 6 ? { positional: true } : {}).then(data => data.result)
   }
 
 
