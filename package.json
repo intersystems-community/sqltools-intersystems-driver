@@ -7,6 +7,16 @@
     "vscode": "^1.93.0"
   },
   "publisher": "intersystems-community",
+  "contributors": [
+    {
+      "name": "Dmitry Maslennikov",
+      "email": "mrdaimor@gmail.com"
+    },
+    {
+      "name": "John Murray",
+      "email": "johnm@georgejames.com"
+    }
+  ],
   "license": "MIT",
   "homepage": "https://github.com/intersystems-community/sqltools-intersystems-driver#readme",
   "repository": {
