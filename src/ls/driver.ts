@@ -15,6 +15,7 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
   queries: IQueries = queries;
   private showSystem = false;
   private filter = "";
+  private resultSetRowLimit;
 
   public async open() {
     if (this.connection) {
@@ -26,7 +27,7 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
     this.showSystem = this.credentials.showSystem || false;
     this.filter = this.credentials.filter || "";
 
-    let { https, server: host, port, pathPrefix, username, password } = this.credentials;
+    let { https, server: host, port, pathPrefix, username, password, resultSetRowLimit } = this.credentials;
     config = {
       https,
       host,
@@ -36,8 +37,9 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
       username,
       password
     };
+    this.resultSetRowLimit = resultSetRowLimit;
 
-    const irisdb = new IRISdb(config);
+    const irisdb = new IRISdb(config, resultSetRowLimit);
     return irisdb.open()
       .then(() => {
         this.connection = Promise.resolve(irisdb);
@@ -91,7 +93,7 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
         resultsAgg.push({
           cols,
           connId: this.getId(),
-          messages: [{ date: new Date(), message: `Query ok with ${queryResult[0]?.content.length ?? 'no'} results` }],
+          messages: [{ date: new Date(), message: `Query ok with ${queryResult[0]?.content.length ?? 'no'} results (resultSetRowLimit = ${this.resultSetRowLimit})` }],
           results: this.mapRows(queryResult[0]?.content, cols),
           query: queries.toString(),
           requestId: opt.requestId,

@@ -149,6 +149,7 @@ export async function activate(extContext: ExtensionContext): Promise<IDriverExt
           await resolvePassword(connSpec);
           resolvedConnSpecs.set(serverName, connSpec);
         }
+        const resultSetRowLimit = vscode.workspace.getConfiguration('sqltools-intersystems-driver').get('resultSetRowLimit');
         connInfo = { ...connInfo,
           https: connSpec.webServer.scheme === 'https',
           server: connSpec.webServer.host,
@@ -157,6 +158,7 @@ export async function activate(extContext: ExtensionContext): Promise<IDriverExt
           username: connSpec.username,
           password: connSpec.password,
           namespace,
+          resultSetRowLimit,
           }
       }
       return connInfo;

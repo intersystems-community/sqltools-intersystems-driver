@@ -53,6 +53,19 @@
     "onLanguage:sql",
     "onCommand:sqltools.*"
   ],
+  "contributes": {
+    "configuration": {
+      "title": "SQLTools InterSystems IRIS Driver",
+      "properties": {
+        "sqltools-intersystems-driver.resultSetRowLimit": {
+          "description": "Maximum number of rows returned by any query, including metadata queries. Use 0 for no limit, which may cause timeouts or other failures. Setting is applied at connection time and is ignored by server versions earlier than 2023.1.",
+          "type": "integer",
+          "default": 1000,
+          "minimum": 0
+        }
+      }
+    }
+  },
   "main": "./dist/extension.js",
   "ls": "./dist/ls/plugin.js",
   "dependencies": {

@@ -26,6 +26,7 @@ export interface IQueries extends IBaseQueries  {
 export default class IRISdb {
 
   private config: IRISDirect;
+  private resultSetRowLimit: number;
   private cookies: string[] = [];
   private _apiVersion = 1;
 
@@ -33,9 +34,10 @@ export default class IRISdb {
     return this._apiVersion;
   }
 
-  public constructor(config: IRISDirect) {
+  public constructor(config: IRISDirect, resultSetRowLimit: number) {
     this.config = config;
     this.config.namespace = this.config.namespace.toUpperCase();
+    this.resultSetRowLimit = resultSetRowLimit;
   }
 
   public updateCookies(newCookies: string[]): void {
@@ -187,7 +189,7 @@ export default class IRISdb {
     return this.request(1, "POST", `${this.config.namespace}/action/query`, {
       parameters,
       query,
-    }, this._apiVersion >= 6 ? { positional: true } : {}).then(data => data.result)
+    }, this._apiVersion >= 6 ? { positional: true , max: this.resultSetRowLimit > 0 ? this.resultSetRowLimit : undefined } : {}).then(data => data.result)
   }
 
 
