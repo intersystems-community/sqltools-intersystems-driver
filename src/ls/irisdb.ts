@@ -27,6 +27,7 @@ export default class IRISdb {
 
   private config: IRISDirect;
   private resultSetRowLimit: number;
+  private rejectUnauthorized: boolean;
   private cookies: string[] = [];
   private _apiVersion = 1;
 
@@ -34,10 +35,11 @@ export default class IRISdb {
     return this._apiVersion;
   }
 
-  public constructor(config: IRISDirect, resultSetRowLimit: number) {
+  public constructor(config: IRISDirect, resultSetRowLimit: number, rejectUnauthorized: boolean = true) {
     this.config = config;
     this.config.namespace = this.config.namespace.toUpperCase();
     this.resultSetRowLimit = resultSetRowLimit;
+    this.rejectUnauthorized = rejectUnauthorized;
   }
 
   public updateCookies(newCookies: string[]): void {
@@ -99,7 +101,7 @@ export default class IRISdb {
     const agent = new (https ? httpsModule : httpModule).Agent({
       keepAlive: true,
       maxSockets: 10,
-      rejectUnauthorized: https,
+      rejectUnauthorized: this.rejectUnauthorized,
     });
     path = encodeURI(`${pathPrefix || ""}/api/atelier/${path || ""}${buildParams()}`);
 

@@ -27,7 +27,7 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
     this.showSystem = this.credentials.showSystem || false;
     this.filter = this.credentials.filter || "";
 
-    let { https, server: host, port, pathPrefix, username, password, resultSetRowLimit } = this.credentials;
+    let { https, server: host, port, pathPrefix, username, password, resultSetRowLimit, rejectUnauthorized } = this.credentials;
     config = {
       https,
       host,
@@ -39,7 +39,7 @@ export default class IRISDriver extends AbstractDriver<IRISdb, DriverOptions> im
     };
     this.resultSetRowLimit = resultSetRowLimit;
 
-    const irisdb = new IRISdb(config, resultSetRowLimit);
+    const irisdb = new IRISdb(config, resultSetRowLimit, rejectUnauthorized);
     return irisdb.open()
       .then(() => {
         this.connection = Promise.resolve(irisdb);

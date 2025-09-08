@@ -159,6 +159,7 @@ export async function activate(extContext: ExtensionContext): Promise<IDriverExt
           password: connSpec.password,
           namespace,
           resultSetRowLimit,
+          rejectUnauthorized: vscode.workspace.getConfiguration("http").get("proxyStrictSSL"),
           }
       }
       return connInfo;
