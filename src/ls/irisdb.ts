@@ -1,6 +1,5 @@
 import * as httpModule from "http";
 import * as httpsModule from "https";
-import requestPromise from "request-promise";
 import { QueryBuilder, NSDatabase, IBaseQueries } from "@sqltools/types";
 
 export class IRISDirect {
@@ -97,7 +96,6 @@ export default class IRISdb {
     }
     headers["Cache-Control"] = "no-cache";
 
-    const proto = https ? "https" : "http";
     const agent = new (https ? httpsModule : httpModule).Agent({
       keepAlive: true,
       maxSockets: 10,
@@ -113,56 +111,87 @@ export default class IRISdb {
       auth = this.request(0, "HEAD");
     }
 
-    return auth.then(cookie => 
-        requestPromise({
-          agent,
-          auth: { user: username, pass: password, sendImmediately: true },
-          body: ["PUT", "POST"].includes(method) ? body : null,
-          headers: {
-            ...headers,
-            Cookie: cookie,
-          },
-          json: true,
-          method,
-          resolveWithFullResponse: true,
-          simple: true,
-          uri: `${proto}://${host}:${port}${path}`,
+    return auth.then(cookie => {
+      return new Promise<{ headers: httpModule.IncomingHttpHeaders; body: any }>((resolve, reject) => {
+        const basicAuth = Buffer.from(`${username}:${password}`).toString("base64");
+        const cookieStr = Array.isArray(cookie) ? cookie.join("; ") : String(cookie);
+        const reqHeaders: Record<string, string> = {
+          ...headers,
+          Authorization: `Basic ${basicAuth}`,
+          Cookie: cookieStr,
+        };
+        const bodyStr = ["PUT", "POST"].includes(method) && body != null
+          ? JSON.stringify(body)
+          : null;
+        if (bodyStr) {
+          reqHeaders["Content-Length"] = String(Buffer.byteLength(bodyStr));
+        }
+        const protocol = https ? httpsModule : httpModule;
+        const req = protocol.request(
+          { agent, headers: reqHeaders, hostname: host, method, path, port },
+          (res) => {
+            const chunks: Buffer[] = [];
+            res.on("data", (chunk: Buffer) => chunks.push(chunk));
+            res.on("end", () => {
+              const rawBody = Buffer.concat(chunks).toString("utf8");
+              let parsedBody: any;
+              try {
+                parsedBody = JSON.parse(rawBody);
+              } catch {
+                parsedBody = rawBody;
+              }
+              if (res.statusCode && res.statusCode >= 400) {
+                const err: any = new Error(`${res.statusCode} - ${rawBody}`);
+                err.statusCode = res.statusCode;
+                err.error = parsedBody;
+                reject(err);
+              } else {
+                resolve({ headers: res.headers, body: parsedBody });
+              }
+            });
+            res.on("error", reject);
+          }
+        );
+        req.on("error", reject);
+        if (bodyStr) {
+          req.write(bodyStr);
+        }
+        req.end();
+      })
+        .then(response => {
+          this.updateCookies(response.headers["set-cookie"] || []);
+          return response;
         })
-          // .catch(error => error.error)
-          .then(response => {
-            this.updateCookies(response.headers["set-cookie"])
-            return response;
-          })
-          .then(response => {
-            if (method === "HEAD") {
-              return this.cookies;
-            }
-            const data = response.body;
-            /// deconde encoded content
-            if (data.result && data.result.enc && data.result.content) {
-              data.result.enc = false;
-              data.result.content = Buffer.from(data.result.content.join(""), "base64");
-            }
-            if (data.console) {
-              // outputConsole(data.console);
-            }
-            if (data.result.status && data.result.status !== "") {
-              // outputChannel.appendLine(data.result.status);
-              throw new Error(data.result.status);
-            }
-            if (data.status.summary) {
-              throw new Error(data.status.summary);
-            } else if (data.result.status) {
-              throw new Error(data.result.status);
-            } else {
-              return data;
-            }
-          })
-          .catch(error => {
-            console.log('Error', error);
-            throw error;
-          })
-      );
+        .then(response => {
+          if (method === "HEAD") {
+            return this.cookies;
+          }
+          const data = response.body;
+          /// deconde encoded content
+          if (data.result && data.result.enc && data.result.content) {
+            data.result.enc = false;
+            data.result.content = Buffer.from(data.result.content.join(""), "base64");
+          }
+          if (data.console) {
+            // outputConsole(data.console);
+          }
+          if (data.result.status && data.result.status !== "") {
+            // outputChannel.appendLine(data.result.status);
+            throw new Error(data.result.status);
+          }
+          if (data.status.summary) {
+            throw new Error(data.status.summary);
+          } else if (data.result.status) {
+            throw new Error(data.result.status);
+          } else {
+            return data;
+          }
+        })
+        .catch(error => {
+          console.log('Error', error);
+          throw error;
+        });
+    });
   }
 
   public async open() {
