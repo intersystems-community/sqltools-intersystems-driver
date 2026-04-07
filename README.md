@@ -6,7 +6,7 @@ As a complete, cloud-first data platform, InterSystems IRIS eliminates the need 
 
 This SQL driver offers a handy way to test out queries when you're coding in VS Code. It provides a nice "scratchpad" to test out syntax before putting the query into your ObjectScript, Java, or Python code, all without leaving the VS Code environment. Look elsewhere for a fully-functional SQL client.
 
-Try out the [SQL QuickStart](https://gettingstarted.intersystems.com/language-quickstarts/sql-quickstart/) and explore more [getting started exercises](https://gettingstarted.intersystems.com).
+Try out more [SQL getting started exercises here](https://docs.intersystems.com/irislatest/csp/docbook/DocBook.UI.Page.cls?KEY=PAGE_sql&ADJUST=1).
 
 ## Installation
 
