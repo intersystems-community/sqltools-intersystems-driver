@@ -82,7 +82,7 @@
     "@babel/core": "^7.14.3",
     "@sqltools/base-driver": "^0.1.10",
     "@sqltools/types": "^0.1.5",
-    "uuid": "^8.3.2"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.14.2",
