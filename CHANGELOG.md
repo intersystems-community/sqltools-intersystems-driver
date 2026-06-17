@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.3.1] 09-Jun-2026
+- Dependency updates
+  - Bump qs from 6.15.0 to 6.15.2 (#81)
+  - Bump fast-uri from 3.1.0 to 3.1.2 (#80)
+  - Bump @babel/plugin-transform-modules-systemjs from 7.22.5 to 7.29.4 (#79)
+  - Bump tmp from 0.2.4 to 0.2.7 (#82)
+  - Bump uuid from 8.3.2 to 14.0.0 (#78)
+
 ## [0.3.0] 07-Apr-2026
 - Enhancements
   - Add `resultSetRowLimit` extension setting to cap query rows (#62)
