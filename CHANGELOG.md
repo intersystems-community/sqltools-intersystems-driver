@@ -1,5 +1,21 @@
 # Change Log
 
+## [0.3.1] 23-Oct-2026
+- Dependency updates
+  - Bump @babel/core and @babel/preset-env (#85)
+  - Bump @babel/plugin-transform-modules-systemjs from 7.22.5 to 7.29.4 (#79)
+  - Bump @vscode/vsce from 2.19.0 to 3.9.2 (#84)
+  - Bump brace-expansion from 5.0.6 to 5.0.12 (#86, #96)
+  - Bump browserslist from 4.28.1 to 4.28.8 (#92)
+  - Bump fast-uri from 3.1.0 to 3.1.7 (#80, #88, #89, #91)
+  - Bump js-yaml from 4.2.0 to 4.3.2 (#90, #95)
+  - Bump linkify-it from 5.0.1 to 5.0.2 (#87)
+  - Bump markdown-it from 12.3.2 to 14.3.3 (#84, #98)
+  - Bump qs from 6.15.0 to 6.15.2 (#81)
+  - Bump rimraf from 3.0.2 to 6.1.3 (#86)
+  - Bump tmp from 0.2.4 to 0.2.7 (#82)
+  - Bump uuid from 8.3.2 to 14.0.0 (#78)
+
 ## [0.3.0] 07-Apr-2026
 - Enhancements
   - Add `resultSetRowLimit` extension setting to cap query rows (#62)
